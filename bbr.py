@@ -45,7 +45,7 @@ def show_main_menu():
     show_image()
     print("\nSpecial thanks to the Queen")
     print("\n")
-    print("View the project on GitHub: https://github.com/kalilovers")
+    print("\nView the project on GitHub: https://github.com/kalilovers")
     print("\nLightKnight Simple Script For Simple and Stable BBR")
     print("1_BBR Fq")
     print("2_BBR Fq_Codel(Recommend - Especially For IPSec And Local TUNS)")
