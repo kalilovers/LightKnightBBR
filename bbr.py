@@ -44,7 +44,6 @@ SSSSS#$%*!!!%&########@$$$$@SSS#####S@*!!!!!**!!%!&SSSSSSSSSSSSSSSSSSS
 def show_main_menu():
     show_image()
     print("\nSpecial thanks to the Queen")
-    print("\n")
     print("\nView the project on GitHub: https://github.com/kalilovers")
     print("\nLightKnight Simple Script For Simple and Stable BBR")
     print("1_BBR Fq")
