@@ -1,8 +1,9 @@
 # LightKnightBBR
 Long Live The Queen
 
-Currently, 2 types of BBR without manipulation have been added.
-Other types are added. The recommendation code has a Codel **(FQ_CODEL)**
+# Currently, 2 types of BBR without manipulation have been added.
+
+# Other methods will be added soon (with the ability to change the shape of the traffic)
 
 **Read** : In my tests, the performance of the Codel type and even the simple one (FQ) caused **less disturbance and even using +Codel+** reduced the fluctuation and problems of local tunnels especially with **IPSec** and in many other cases.
 
