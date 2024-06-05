@@ -135,7 +135,8 @@ def run_bench_method2():
 
 def run_iperf_client():
     os.system("apt update")
-    os.system("apt install iperf3")
+    os.system("apt install iperf3 -y")
+    os.system("ufw allow 5201")
     server_ip = input("What is the IP address of your target server?Enter Your Target IP: ")
     os.system(f"iperf3 -c {server_ip} -i 1 -t 10 -P 20")
     input("The download speed test was done. To test the upload speed, enter or press a button... ")
@@ -144,7 +145,7 @@ def run_iperf_client():
 
 def run_iperf_server():
     os.system("apt update")
-    os.system("apt install iperf3")
+    os.system("apt install iperf3 -y")
     os.system("ufw allow 5201")
     os.system("iperf3 -s")
     input("You are active as a server, please do not log out. If it is finished, to Back to the menu, enter or press a button... ")
@@ -156,7 +157,7 @@ def run_speedtest_ookla():
     if not server_num:
         server_num = "54746"
     os.system(f"./speedtest -s {server_num}")
-    input("Test Done, please do not log out. If it is finished, to Back to the menu, enter or press a button... ")
+    input("SpeedTest Done, please do not log out. If it is finished, to Back to the menu, enter or press a button... ")
 
 def main():
     while True:
