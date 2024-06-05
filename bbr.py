@@ -29,14 +29,14 @@ $%%%%%%%$$$$%**!*!!!!!%!::::::::::::::::::!%:::::!*%!$*%%@*$$%@%*$$$$%
 %%%$$$%%%%$!!!!!!!!:!$%%%%%%*!:::::!!*%%$*!!!:!!*%&&&%%%$#S&@$$&$&S#@&
 %%$$$$$$@%%::!!!!!::%@%%%%%%$$*%%%%%**%@$::::::!*$@@@@S#SSSSSSSSSSSSSS
 %$$$$$$%#S*:::::::::&#####&&S@%@S#$@&#SS*:::::!*%$@$&SSSSSSSSSSSSSSSSS
-%%$$$%%$S#::::!!:::!$*$@#SB#%!!#SSSS##S@:!::!:**&S##SSSSSSSSSSSSSSSSSS
-%%%%%%@#S@:::!!!!!$S%.:%##%..*##@&####S%:!:!!!**SSSSSSSSSSSS##S#SSSSSS
-%%%%%%$SS%!!!!!!!!!**.*S&!.*&S@$$$@###&!!!!!:!!$SSSSBSSSS&S@%&##SSSSSS
+%%$$$%%$S#::::!!:::!$*$@#SB#%!!#SSSS##S@:!::!:**SS##SSSSSSSSSSSSSSSSSS
+%%%%%%@#S@:::!!!!!$S%.:%##%..*##@&####S%:!:!!!**SSSSBSSSS&S@%&##SSSSSS
+%%%%%%$SS%!!!!!!!!!**.*S&!.*&S@$$$@###&!!!!!:!!$SSSSBSSSS@$$@##SSSSSSS
 %$$$$&#S#*!!!!!!!!:!!:@$!%&SS@$$$@@##S@:!!!!!*!@S#&&@@$*%@##SSSSSSSSSS
 %@SSSSSS@!!!!!!!!!!!!$@@#SS#@$&##SSSSS$!!!!!!*:@S@:::.:*#SSSSSSSSSSSSS
 #SSS##S&%!!!!!!!!!!@&#####&@$&SSSSSSSS%!!!!:*%:$&!::.%#SSSSSSSSSSSSSSS
-SSS##S#$%!!!!!!!*$&######@$$@#SS#S##S&*!!!!:%*!%!:::%#BSSSSSSSSSSSSSSS
-SSSSSS$%*!!!!!%@#######&$$@$&SSSS###S&*!!!!!%*!!%::@BSSSSSSSSSSSSSSSSS
+SSS##S#$%!!!!!!!*$&######@$$@$&SSSS###S&*!!!!:%*!%!::%#BSSSSSSSSSSSSSS
+SSSSSS$%*!!!!!%@#######&$$@$&SSSS###S&*!!!!:%*!!%::@BSSSSSSSSSSSSSSSSS
 SSSSS#$%*!!!%&########@$$$$@SSS#####S@*!!!!!**!!%!&SSSSSSSSSSSSSSSSSSS
     """
     print(ascii_art)
@@ -49,6 +49,7 @@ def show_main_menu():
     print("1_BBR Fq")
     print("2_BBR Fq_Codel(Recommend - Especially For IPSec And Local TUNS)")
     print("3_Restore")
+    print("4_Speed Test")
     print("0_Exit")
 
 def show_fq_menu():
@@ -61,6 +62,20 @@ def show_fq_codel_menu():
     print("\nFq_Codel")
     print("1_Delete Old File Then Setup(+Backup)")
     print("2_Setup Without Delete")
+    print("0_Back")
+
+def show_speed_test_menu():
+    print("\nSpeed Test")
+    print("1_Bench Method1")
+    print("2_Bench Method2")
+    print("3_Iperf3 (Between 2 Server)")
+    print("4_Speedtest Ookla")
+    print("0_Back")
+
+def show_iperf_menu():
+    print("\nChoose which one you are:")
+    print("1_Client (iran or...)")
+    print("2_Server (Kharej/Traget or...)")
     print("0_Back")
 
 def prompt_restart():
@@ -112,6 +127,36 @@ def restore():
     
     prompt_restart()
 
+def run_bench_method1():
+    os.system("wget -qO- bench.sh | bash")
+
+def run_bench_method2():
+    os.system("curl -Lso- bench.sh | bash")
+
+def run_iperf_client():
+    os.system("apt update")
+    os.system("apt install iperf3")
+    server_ip = input("What is the IP address of your target server?Enter Your Target IP: ")
+    os.system(f"iperf3 -c {server_ip} -i 1 -t 10 -P 20")
+    input("The download speed test was done. To test the upload speed, enter or press a button... ")
+    os.system(f"iperf3 -c {server_ip} -R -i 1 -t 10 -P 20")
+    input("The upload speed test was done. To Back to the menu, enter or press a button... ")
+
+def run_iperf_server():
+    os.system("apt update")
+    os.system("apt install iperf3")
+    os.system("iperf3 -s")
+    input("You are active as a server, please do not log out. If it is finished, to Back to the menu, enter or press a button... ")
+
+def run_speedtest_ookla():
+    os.system("wget https://install.speedtest.net/app/cli/ookla-speedtest-1.2.0-linux-x86_64.tgz")
+    os.system("tar zxvf ookla-speedtest-1.2.0-linux-x86_64.tgz")
+    server_num = input("Enter your ookla-server number. Or by pressing a button, the Amsterdam server can be used by default: ")
+    if not server_num:
+        server_num = "54746"
+    os.system(f"./speedtest -s {server_num}")
+    input("Test Done, please do not log out. If it is finished, to Back to the menu, enter or press a button... ")
+
 def main():
     while True:
         show_main_menu()
@@ -143,6 +188,32 @@ def main():
                     print("Invalid choice, please try again.")
         elif choice == '3':
             restore()
+        elif choice == '4':
+            while True:
+                show_speed_test_menu()
+                speed_test_choice = input("Please enter your choice: ")
+                if speed_test_choice == '1':
+                    run_bench_method1()
+                elif speed_test_choice == '2':
+                    run_bench_method2()
+                elif speed_test_choice == '3':
+                    while True:
+                        show_iperf_menu()
+                        iperf_choice = input("Please enter your choice: ")
+                        if iperf_choice == '1':
+                            run_iperf_client()
+                        elif iperf_choice == '2':
+                            run_iperf_server()
+                        elif iperf_choice == '0':
+                            break
+                        else:
+                            print("Invalid choice, please try again.")
+                elif speed_test_choice == '4':
+                    run_speedtest_ookla()
+                elif speed_test_choice == '0':
+                    break
+                else:
+                    print("Invalid choice, please try again.")
         elif choice == '0':
             print("Goodbye!")
             break
