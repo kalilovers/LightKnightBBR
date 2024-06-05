@@ -145,6 +145,7 @@ def run_iperf_client():
 def run_iperf_server():
     os.system("apt update")
     os.system("apt install iperf3")
+    os.system("ufw allow 5201")
     os.system("iperf3 -s")
     input("You are active as a server, please do not log out. If it is finished, to Back to the menu, enter or press a button... ")
 
