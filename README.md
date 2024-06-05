@@ -1,8 +1,8 @@
-# LightKnightBBR And SpeedTest
+# LightKnightBBR/SpeedTest
 Long Live The Queen , special thanks to : 
 https://github.com/Azumi67
 
-# A project to install BBR and SpeedTest
+**A project to install BBR and SpeedTest**
 
 
 
