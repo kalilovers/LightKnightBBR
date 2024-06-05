@@ -2,7 +2,7 @@
 Long Live The Queen , special thanks to : 
 https://github.com/Azumi67
 
-# A project to install BBR and test speed
+# A project to install BBR and SpeedTest
 
 
 
