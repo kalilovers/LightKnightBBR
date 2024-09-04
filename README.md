@@ -2,6 +2,9 @@
 Long Live The Queen , special thanks to : 
 https://github.com/Azumi67
 
+اگر به ویژگی های دیگه ای نیاز دارید در قسمت issue اطلاع بدید .
+If you need other features, let me know in the issue section
+
 **A project to install BBR and SpeedTest**
 
 
