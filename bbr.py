@@ -2,8 +2,13 @@ import os
 import shutil
 import platform
 import subprocess
+from colorama import init, Fore, Style
+
+# Initialize colorama
+init(autoreset=True)
 
 def show_image():
+    # ASCII art of the logo
     ascii_art = """
 $$$$$$$$$$$%%%$$$$$$$$%%%%%%%%%$$$%%%%$$%%$$$$$%$$%%%%%%%%%%%%%%%%%%%$
 $$$$$$$$$%%%%$$$$$$$$%%%%%%%%%%**!!****%%%***%%$$%%$$%%%%%%%%%%%%%%%%%
@@ -41,56 +46,59 @@ SSS##S#$%!!!!!!!*$&######@$$@$&SSSS###S&*!!!!:%*!%!::%#BSSSSSSSSSSSSSS
 SSSSSS$%*!!!!!%@#######&$$@$&SSSS###S@*!!!!:%*!!%::@BSSSSSSSSSSSSSSSSS
 SSSSS#$%*!!!%&########@$$$$@SSS#####S@*!!!!!**!!%!&SSSSSSSSSSSSSSSSSSS
     """
+    # Print the ASCII art
     print(ascii_art)
 
 def show_main_menu():
+    clear = lambda: os.system('cls' if os.name == 'nt' else 'clear')
+    clear()
     show_image()
-    print("\nV 1.1")
-    print("\nSpecial thanks to the Queen")
-    print("\nView the project on GitHub: https://github.com/kalilovers")
-    print("\nLightKnight Simple Script For Simple and Stable BBR")
-    print("1_BBR Fq")
-    print("2_BBR Fq_Codel(Recommend - Especially For IPSec And Local TUNS)")
-    print("3_Restore Default BBR/Settings")
-    print("4_Speed Test")
-    print("0_Exit")
+    print(Fore.YELLOW + Style.BRIGHT + "\nV 1.1")
+    print(Fore.GREEN + "\nSpecial thanks to the Queen")
+    print(Fore.CYAN + "\nView the project on GitHub: https://github.com/kalilovers")
+    print(Fore.RED + "\nLightKnight Simple Script For Simple and Stable BBR")
+    print(Fore.BLUE + "1_" + Fore.WHITE + "BBR Fq")
+    print(Fore.BLUE + "2_" + Fore.WHITE + "BBR Fq_Codel (Recommend - Especially For IPSec And Local TUNS)")
+    print(Fore.BLUE + "3_" + Fore.WHITE + "Restore Default BBR/Settings")
+    print(Fore.BLUE + "4_" + Fore.WHITE + "Speed Test")
+    print(Fore.BLUE + "0_" + Fore.WHITE + "Exit")
 
 def show_fq_menu():
-    print("\nFq")
-    print("1_Delete Old File Then Setup(+Backup)")
-    print("2_Setup Without Delete")
-    print("0_Back")
+    print(Fore.CYAN + "\nFq")
+    print(Fore.BLUE + "1_" + Fore.WHITE + "Delete Old File Then Setup (+Backup)")
+    print(Fore.BLUE + "2_" + Fore.WHITE + "Setup Without Delete")
+    print(Fore.BLUE + "0_" + Fore.WHITE + "Back")
 
 def show_fq_codel_menu():
-    print("\nFq_Codel")
-    print("1_Delete Old File Then Setup(+Backup)")
-    print("2_Setup Without Delete")
-    print("0_Back")
+    print(Fore.CYAN + "\nFq_Codel")
+    print(Fore.BLUE + "1_" + Fore.WHITE + "Delete Old File Then Setup (+Backup)")
+    print(Fore.BLUE + "2_" + Fore.WHITE + "Setup Without Delete")
+    print(Fore.BLUE + "0_" + Fore.WHITE + "Back")
 
 def show_speed_test_menu():
-    print("\nSpeed Test")
-    print("1_Bench Method1")
-    print("2_Bench Method2")
-    print("3_Iperf3 (Between 2 Server)")
-    print("4_Speedtest Ookla")
-    print("0_Back")
+    print(Fore.CYAN + "\nSpeed Test")
+    print(Fore.BLUE + "1_" + Fore.WHITE + "Bench Method1")
+    print(Fore.BLUE + "2_" + Fore.WHITE + "Bench Method2")
+    print(Fore.BLUE + "3_" + Fore.WHITE + "Iperf3 (Between 2 Server)")
+    print(Fore.BLUE + "4_" + Fore.WHITE + "Speedtest Ookla")
+    print(Fore.BLUE + "0_" + Fore.WHITE + "Back")
 
 def show_iperf_menu():
-    print("\nChoose which one you are:")
-    print("1_Client (iran or...)")
-    print("2_Server (Kharej/Traget or...)")
-    print("0_Back")
+    print(Fore.CYAN + "\nChoose which one you are:")
+    print(Fore.BLUE + "1_" + Fore.WHITE + "Client (iran or...)")
+    print(Fore.BLUE + "2_" + Fore.WHITE + "Server (Kharej/Traget or...)")
+    print(Fore.BLUE + "0_" + Fore.WHITE + "Back")
 
 def prompt_restart():
     while True:
-        choice = input("The mission was successfully completed. Do you want to restart? (Required) Yes or No: ").lower()
+        choice = input(Fore.YELLOW + "The mission was successfully completed. Do you want to restart? (Required) Yes or No: ").lower()
         if choice in ['n', 'no']:
             break
         elif choice in ['y', 'yes']:
             os.system("reboot")
             break
         else:
-            print("Please enter Yes or No.")
+            print(Fore.RED + "Please enter Yes or No.")
 
 def check_kernel_and_os():
     print("Checking the compatibility of operating system and kernel...")
