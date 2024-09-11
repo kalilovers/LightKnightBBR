@@ -5,7 +5,11 @@ import subprocess
 from colorama import init, Fore, Style
 
 # Initialize colorama
-init(autoreset=True)
+init(autoreset=True, strip=False, convert=True)
+
+print(Fore.GREEN + "This text should be green")
+print(Fore.RED + "This text should be red")
+print(Fore.YELLOW + "This text should be yellow")
 
 def show_image():
     # ASCII art of the logo
