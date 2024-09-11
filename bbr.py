@@ -4,108 +4,71 @@ import platform
 import subprocess
 from colorama import init, Fore, Style
 
-# Initialize colorama
-init(autoreset=True, strip=False, convert=True)
+def logo():
+    logo_path = "/etc/logo.sh"
+    try:
+        subprocess.run(["bash", "-c", logo_path], check=True)
+    except subprocess.CalledProcessError as e:
+        return e
 
-print(Fore.GREEN + "This text should be green")
-print(Fore.RED + "This text should be red")
-print(Fore.YELLOW + "This text should be yellow")
+    return None
 
-def show_image():
-    # ASCII art of the logo
-    ascii_art = """
-$$$$$$$$$$$%%%$$$$$$$$%%%%%%%%%$$$%%%%$$%%$$$$$%$$%%%%%%%%%%%%%%%%%%%$
-$$$$$$$$$%%%%$$$$$$$$%%%%%%%%%%**!!****%%%***%%$$%%$$%%%%%%%%%%%%%%%%%
-$$$$$$$$%%%%$$$$$$$$%%%%%$$*!!!**!*****!::!***!!*$$$%$$$%%%%%%%%%%%%%%
-$$$$$$$%%%%%$$$$$$$%%%%$%*:!%$*:!%**!:!*%!::::!::!*%$$%%%%%%%%%%%%%%%%
-$$$$$$%%%%$$$$$$$$%%%$$*:!%$*!*!:!*%%*::!%*::::::!!!!%%%%%%%%%%%%%%%%%
-$$$$$%%%%$$$$%%$$%%%$$!:%%!:*%%!::!!*%%:::%*:::::::**:*%%%%$%%%%%%%%%%
-%%$$%%%%$$$$$$$$%%%%*:!$$$*%&$%$$*%$%%@@::!@!:::::::!%::%$$$%%%%%%%%%%
-%%%%%%$$$$$$$$$%%%$!.*#@$@&&%*%$@@&@%%&#&@$$$:::::::!!*::*$%%%%%%%%%%%
-%%%%%$$$$$$$$$%%%$!:%&$$*%%:*%*!*!*$$**!$@$*@!:::::!*!:!::!%%%%%%%%%%%
-%%%%%$$$$$$$$%%%$!:%$%%!!$!:::*:%:::%::!**!%*%:::::!%$:::::!%%%%%%%%%%
-%%%%%%$$$$$$%%%$*:**%%%:$%:::**:$:::$::**%:::%::::::%$!::!::*$%%%%%%%%
-%%%%%%%$$$$%%%%%:*!!$%!*%*:!!%*!$!:!$!:**%!::%!:::::%%!::!*::%@%%%%%%%
-%%%%%%%%$%%%%%$!**:%$%!%%%%*****%***$!:****!!%*:::::%%*::*%::*$$%%%%%$
-$$$$$$$$%%%%%$%%$:!%%%%***!:::::::*%%%%%%**!!%*:::::%%*::*$::!$%%%%%$$
-$$$$$$$%%%%%%$%&!:*$$**!%!!:::::::::!*%*$%$*!$!:::::%$%::%$:*:$$!$%$$$
-$$$$$$%%%%%%%@$%::*%$%%$$$%::::::::*%$$@@@&$!$::::::$%%::%$:*:$$:%$$$$
-$$$$$%%%%%%%%$%!::%!*%%%$@@*:::::::!:*$$@@$%@*::::::$*%::$$:%!$$!!$$$$
-$$$$%%%%%%%%$*%!!!%!!*!!!!:::::::::::!***::!@::::::!%%%!!$%!%*%@*!$$$$
-$$$%%%%%%%%%$**!!%*!!!%::::!!::::::::::::::**:::::!***%**@*%$%$$**$$$$
-$%%%%%%%$$$$%**!*!!!!!%!::::::::::::::::::!%:::::!*%!$*%%@*$$%@%*$$$$%
-%%%%%%$$$$$$****!!!!!!*%::::::::::::::::::%*!!!%!**$$@$$$%%%%%$$$$$$%%
-%%%%%%$$%%%$!*%!!!!!:**$%!::::::!!::::***%%*%*****$$@$$$%%%%$%%%%%%%$$
-%%%%$$%%%%%%!**!!!!::*$%%%*!::::::::::*%$$!!!!!!%%$$@$%%%%$%%%%%%%$$%%
-%%%$$$%%%%$!!!!!!!!:!$%%%%%%*!:::::!!*%%$*!!!:!!*%&&&%%%$#S&@$$&$&S#@&
-%%$$$$$$@%%::!!!!!::%@%%%%%%$$*%%%%%**%@$::::::!*$@@@@S#SSSSSSSSSSSSSS
-%$$$$$$%#S*:::::::::&#####&&S@%@S#$@&#SS*:::::!*%$@$&SSSSSSSSSSSSSSSSS
-%%$$$%%$S#::::!!:::!$*$@#SB#%!!#SSSS##S@:!::!:**SS##SSSSSSSSSSSSSSSSSS
-%%%%%%@#S@:::!!!!!$S%.:%##%..*##@&####S%:!:!!!**SSSSBSSSS&S@%&##SSSSSS
-%%%%%%$SS%!!!!!!!!!**.*S&!.*&S@$$$@###&!!!!!:!!$SSSSBSSSS@$$@##SSSSSSS
-%$$$$&#S#*!!!!!!!!:!!:@$!%&SS@$$$@@##S@:!!!!!*!@S#&&@@$*%@##SSSSSSSSSS
-%@SSSSSS@!!!!!!!!!!!!$@@#SS#@$&##SSSSS$!!!!!!*:@S@:::.:*#SSSSSSSSSSSSS
-#SSS##S&%!!!!!!!!!!@&#####&@$&SSSSSSSS%!!!!:*%:$&!::.%#SSSSSSSSSSSSSSS
-SSS##S#$%!!!!!!!*$&######@$$@$&SSSS###S&*!!!!:%*!%!::%#BSSSSSSSSSSSSSS
-SSSSSS$%*!!!!!%@#######&$$@$&SSSS###S@*!!!!:%*!!%::@BSSSSSSSSSSSSSSSSS
-SSSSS#$%*!!!%&########@$$$$@SSS#####S@*!!!!!**!!%!&SSSSSSSSSSSSSSSSSSS
-    """
-    # Print the ASCII art
-    print(ascii_art)
+if os.geteuid() != 0:
+    print("\033[91mThis script must be run as root. Please use sudo -i.\033[0m")
+    sys.exit(1)
 
 def show_main_menu():
-    clear = lambda: os.system('cls' if os.name == 'nt' else 'clear')
-    clear()
-    show_image()
-    print(Fore.YELLOW + Style.BRIGHT + "\nV 1.1")
-    print(Fore.GREEN + "\nSpecial thanks to the Queen")
-    print(Fore.CYAN + "\nView the project on GitHub: https://github.com/kalilovers")
-    print(Fore.RED + "\nLightKnight Simple Script For Simple and Stable BBR")
-    print(Fore.BLUE + "1_" + Fore.WHITE + "BBR Fq")
-    print(Fore.BLUE + "2_" + Fore.WHITE + "BBR Fq_Codel (Recommend - Especially For IPSec And Local TUNS)")
-    print(Fore.BLUE + "3_" + Fore.WHITE + "Restore Default BBR/Settings")
-    print(Fore.BLUE + "4_" + Fore.WHITE + "Speed Test")
-    print(Fore.BLUE + "0_" + Fore.WHITE + "Exit")
+    os.system("clear")
+    logo()
+    print("\033[93m  \033[1m  \nV 1.1  \033[0m")
+    print("\033[92m  \nSpecial thanks to the Queen  \033[0m")
+    print("\033[96m  \nView the project on GitHub: https://github.com/kalilovers  \033[0m")
+    print("\033[91m  \nLightKnight Simple Script For Simple and Stable BBR  \033[0m")
+    print("\033[94m  1.  \033[97m  BBR Fq  \033[0m")
+    print("\033[94m  2.  \033[97m  BBR Fq_Codel (Recommend - Especially For IPSec And Local TUNS)  \033[0m")
+    print("\033[94m  3.  \033[97m  Restore Default BBR/Settings  \033[0m")
+    print("\033[94m  4.  \033[97m  Speed Test  \033[0m")
+    print("\033[94m  0.  \033[97m  Exit  \033[0m")
 
 def show_fq_menu():
-    print(Fore.CYAN + "\nFq")
-    print(Fore.BLUE + "1_" + Fore.WHITE + "Delete Old File Then Setup (+Backup)")
-    print(Fore.BLUE + "2_" + Fore.WHITE + "Setup Without Delete")
-    print(Fore.BLUE + "0_" + Fore.WHITE + "Back")
+    print("\033[96m  \nFq  \033[0m")
+    print("\033[94m  1.  \033[97m  Delete Old File Then Setup (Backup)  \033[0m")
+    print("\033[94m  2.  \033[97m  Setup Without Delete  \033[0m")
+    print("\033[94m  0.  \033[97m  Back  \033[0m")
 
 def show_fq_codel_menu():
-    print(Fore.CYAN + "\nFq_Codel")
-    print(Fore.BLUE + "1_" + Fore.WHITE + "Delete Old File Then Setup (+Backup)")
-    print(Fore.BLUE + "2_" + Fore.WHITE + "Setup Without Delete")
-    print(Fore.BLUE + "0_" + Fore.WHITE + "Back")
+    print("\033[96m  \nFq_Codel  \033[0m")
+    print("\033[94m  1.  \033[97m  Delete Old File Then Setup (Backup)  \033[0m")
+    print("\033[94m  2.  \033[97m  Setup Without Delete  \033[0m")
+    print("\033[94m  0.  \033[97m  Back  \033[0m")
 
 def show_speed_test_menu():
-    print(Fore.CYAN + "\nSpeed Test")
-    print(Fore.BLUE + "1_" + Fore.WHITE + "Bench Method1")
-    print(Fore.BLUE + "2_" + Fore.WHITE + "Bench Method2")
-    print(Fore.BLUE + "3_" + Fore.WHITE + "Iperf3 (Between 2 Server)")
-    print(Fore.BLUE + "4_" + Fore.WHITE + "Speedtest Ookla")
-    print(Fore.BLUE + "0_" + Fore.WHITE + "Back")
+    print("\033[96m  \nSpeed Test  \033[0m")
+    print("\033[94m  1.  \033[97m  Bench Method1  \033[0m")
+    print("\033[94m  2.  \033[97m  Bench Method2  \033[0m")
+    print("\033[94m  3.  \033[97m  Iperf3 (Between 2 Server)  \033[0m")
+    print("\033[94m  4.  \033[97m  Speedtest Ookla  \033[0m")
+    print("\033[94m  0.  \033[97m  Back  \033[0m")
 
 def show_iperf_menu():
-    print(Fore.CYAN + "\nChoose which one you are:")
-    print(Fore.BLUE + "1_" + Fore.WHITE + "Client (iran or...)")
-    print(Fore.BLUE + "2_" + Fore.WHITE + "Server (Kharej/Traget or...)")
-    print(Fore.BLUE + "0_" + Fore.WHITE + "Back")
+    print("\033[96m  \nChoose which one you are:  \033[0m")
+    print("\033[94m  1.  \033[97m  Client (iran or...)  \033[0m")
+    print("\033[94m  2.  \033[97m  Server (Kharej/Traget or...)  \033[0m")
+    print("\033[94m  0.  \033[97m  Back  \033[0m")
 
 def prompt_restart():
     while True:
-        choice = input(Fore.YELLOW + "The mission was successfully completed. Do you want to restart? (Required) Yes or No: ").lower()
+        choice = input("\033[93m  The mission was successfully completed. Do you want to restart? (Requi\033[91m) Yes or No:   \033[0m").lower()
         if choice in ['n', 'no']:
             break
         elif choice in ['y', 'yes']:
             os.system("reboot")
             break
         else:
-            print(Fore.RED + "Please enter Yes or No.")
+            print("\033[91m  Please enter Yes or No.  \033[0m")
 
 def check_kernel_and_os():
-    print("Checking the compatibility of operating system and kernel...")
+    print("\033[96m Checking the compatibility of operating system and kernel...\033[0m")
     try:
         with open("/etc/os-release", "r") as f:
             lines = f.readlines()
@@ -122,7 +85,7 @@ def check_kernel_and_os():
             distro = ""
 
     if distro not in ['ubuntu', 'debian']:
-        print("The operating system is not supported. Only Ubuntu and Debian are supported.")
+        print("\033[96m The operating system is not supported. Only Ubuntu and Debian are supported.\033[0m")
         return False
 
     kernel_version = platform.release()
@@ -178,7 +141,7 @@ def activate_ecn():
     except Exception as e:
         print(f"ECN activation error: {e}")
         return False
-
+    
 def setup_qdisc(algorithm):
     print("Setting the queuing algorithm...")
     try:
@@ -361,79 +324,83 @@ def run_speedtest_ookla():
     input("SpeedTest Done, please do not log out. If it is finished, to Back to the menu, press Enter...")
 
 def main():
-    while True:
-        show_main_menu()
-        choice = input("Please enter your choice: ")
+    try:
+        while True:
+            show_main_menu()
+            choice = input("Please enter your choice: ")
 
-        if choice == '1':
-            while True:
-                show_fq_menu()
-                fq_choice = input("Please enter your choice: ")
-                if fq_choice == '1':
-                    if check_kernel_and_os():
-                        install_required_packages()
-                        activate_ecn()
-                        delete_old_file_then_setup("fq")
-                elif fq_choice == '2':
-                    if check_kernel_and_os():
-                        install_required_packages()
-                        activate_ecn()
-                        setup_without_delete("fq")
-                elif fq_choice == '0':
-                    break
-                else:
-                    print("Invalid choice, please try again.")
-        elif choice == '2':
-            while True:
-                show_fq_codel_menu()
-                fq_codel_choice = input("Please enter your choice: ")
-                if fq_codel_choice == '1':
-                    if check_kernel_and_os():
-                        install_required_packages()
-                        activate_ecn()
-                        delete_old_file_then_setup("fq_codel")
-                elif fq_codel_choice == '2':
-                    if check_kernel_and_os():
-                        install_required_packages()
-                        activate_ecn()
-                        setup_without_delete("fq_codel")
-                elif fq_codel_choice == '0':
-                    break
-                else:
-                    print("Invalid choice, please try again.")
-        elif choice == '3':
-            restore()
-        elif choice == '4':
-            while True:
-                show_speed_test_menu()
-                speed_test_choice = input("Please enter your choice: ")
-                if speed_test_choice == '1':
-                    run_bench_method1()
-                elif speed_test_choice == '2':
-                    run_bench_method2()
-                elif speed_test_choice == '3':
-                    while True:
-                        show_iperf_menu()
-                        iperf_choice = input("Please enter your choice: ")
-                        if iperf_choice == '1':
-                            run_iperf_client()
-                        elif iperf_choice == '2':
-                            run_iperf_server()
-                        elif iperf_choice == '0':
-                            break
-                        else:
-                            print("Invalid choice, please try again.")
-                elif speed_test_choice == '4':
-                    run_speedtest_ookla()
-                elif speed_test_choice == '0':
-                    break
-                else:
-                    print("Invalid choice, please try again.")
-        elif choice == '0':
-            print("Goodbye!")
-            break
-        else:
-            print("Invalid choice, please try again.")
+            if choice == '1':
+                while True:
+                    show_fq_menu()
+                    fq_choice = input("Please enter your choice: ")
+                    if fq_choice == '1':
+                        if check_kernel_and_os():
+                            install_required_packages()
+                            activate_ecn()
+                            delete_old_file_then_setup("fq")
+                    elif fq_choice == '2':
+                        if check_kernel_and_os():
+                            install_required_packages()
+                            activate_ecn()
+                            setup_without_delete("fq")
+                    elif fq_choice == '0':
+                        break
+                    else:
+                        print("Invalid choice, please try again.")
+            elif choice == '2':
+                while True:
+                    show_fq_codel_menu()
+                    fq_codel_choice = input("Please enter your choice: ")
+                    if fq_codel_choice == '1':
+                        if check_kernel_and_os():
+                            install_required_packages()
+                            activate_ecn()
+                            delete_old_file_then_setup("fq_codel")
+                    elif fq_codel_choice == '2':
+                        if check_kernel_and_os():
+                            install_required_packages()
+                            activate_ecn()
+                            setup_without_delete("fq_codel")
+                    elif fq_codel_choice == '0':
+                        break
+                    else:
+                        print("Invalid choice, please try again.")
+            elif choice == '3':
+                restore()
+            elif choice == '4':
+                while True:
+                    show_speed_test_menu()
+                    speed_test_choice = input("Please enter your choice: ")
+                    if speed_test_choice == '1':
+                        run_bench_method1()
+                    elif speed_test_choice == '2':
+                        run_bench_method2()
+                    elif speed_test_choice == '3':
+                        while True:
+                            show_iperf_menu()
+                            iperf_choice = input("Please enter your choice: ")
+                            if iperf_choice == '1':
+                                run_iperf_client()
+                            elif iperf_choice == '2':
+                                run_iperf_server()
+                            elif iperf_choice == '0':
+                                break
+                            else:
+                                print("Invalid choice, please try again.")
+                    elif speed_test_choice == '4':
+                        run_speedtest_ookla()
+                    elif speed_test_choice == '0':
+                        break
+                    else:
+                        print("Invalid choice, please try again.")
+            elif choice == '0':
+                print("Goodbye!")
+                break
+            else:
+                print("Invalid choice, please try again.")
+    except KeyboardInterrupt:
+        print("\nScript interrupted. Exiting gracefully.")
+        exit(0)
 
 if __name__ == "__main__":
     main()
