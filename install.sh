@@ -82,7 +82,7 @@ SSSSS#$%*!!!%&########@$$$$@SSS#####S@*!!!!!**!!%!&SSSSSSSSSSSSSSSSSSS
 EOF
 }
 
-show_image >> /etc/logo.sh 2>&1
+show_image" >> /etc/logo.sh 2>&1
 
 chmod +x /etc/logo.sh
 
