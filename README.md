@@ -80,3 +80,4 @@ python3 <(curl -Ls https://raw.githubusercontent.com/kalilovers/LightKnightBBR/m
 ```
 bash <(curl -Ls https://raw.githubusercontent.com/opiran-club/LightKnightBBR/main/install.sh)
 ```
+
