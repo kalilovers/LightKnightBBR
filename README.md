@@ -76,3 +76,7 @@ simple run :
 ```
 python3 <(curl -Ls https://raw.githubusercontent.com/kalilovers/LightKnightBBR/main/bbr.py --ipv4)
 ```
+
+```
+bash <(curl -Ls https://raw.githubusercontent.com/opiran-club/LightKnightBBR/main/install.sh)
+```
