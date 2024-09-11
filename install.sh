@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 CYAN="\e[96m"
 GREEN="\e[92m"
@@ -12,9 +12,6 @@ NC="\e[0m"
 check_pkg() {
     dpkg -l | grep -qw "$1"
 }
-
-# Exit script on any error
-set -e
 
 echo && echo -e "$YELLOW Updating package list... $NC"
 sudo apt update
@@ -44,10 +41,7 @@ fi
 
 sleep 2
 
-echo "
-#!/bin/bash
-
-logo() {
+echo "logo() {
 echo -e "\033[1;96m$logo\033[0m"
 }
 # azumi art
