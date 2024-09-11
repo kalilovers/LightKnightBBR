@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
 CYAN="\e[96m"
 GREEN="\e[92m"
 YELLOW="\e[93m"
@@ -8,15 +9,16 @@ MAGENTA="\e[95m"
 WHITE="\e[97m"
 NC="\e[0m"
 
-# Function to check if a package is installed
 check_pkg() {
     dpkg -l | grep -qw "$1"
 }
 
+# Exit script on any error
+set -e
+
 echo && echo -e "$YELLOW Updating package list... $NC"
 sudo apt update
 
-# Check and install python3 if not installed
 if check_pkg "python3"; then
     echo && echo -e "$GREEN Python3 is already installed. $NC"
 else
@@ -24,7 +26,6 @@ else
     sudo apt install -y python3
 fi
 
-# Check and install python3-pip if not installed
 if check_pkg "python3-pip"; then
     echo && echo -e "$GREEN pip3 is already installed. $NC"
 else
@@ -32,7 +33,6 @@ else
     sudo apt install -y python3-pip
 fi
 
-# Check if colorama is installed in Python, and install if necessary
 if python3 -c "import colorama" &> /dev/null; then
     echo && echo -e "$GREEN colorama is already installed. $NC"
 else
@@ -40,5 +40,51 @@ else
     pip3 install colorama
 fi
 
-# Run the Python script
-python3 <(curl -Ls https://raw.githubusercontent.com/kalilovers/LightKnightBBR/main/bbr.py --ipv4)
+echo "
+#!/bin/bash
+
+show_image() {
+    cat << 'EOF'
+$$$$$$$$$$$%%%$$$$$$$$%%%%%%%%%$$$%%%%$$%%$$$$$%$$%%%%%%%%%%%%%%%%%%%$
+$$$$$$$$$%%%%$$$$$$$$%%%%%%%%%%**!!****%%%***%%$$%%$$%%%%%%%%%%%%%%%%%
+$$$$$$$$%%%%$$$$$$$$%%%%%$$*!!!**!*****!::!***!!*$$$%$$$%%%%%%%%%%%%%%
+$$$$$$$%%%%%$$$$$$$%%%%$%*:!%$*:!%**!:!*%!::::!::!*%$$%%%%%%%%%%%%%%%%
+$$$$$$%%%%$$$$$$$$%%%$$*:!%$*!*!:!*%%*::!%*::::::!!!!%%%%%%%%%%%%%%%%%
+$$$$$%%%%$$$$%%$$%%%$$!:%%!:*%%!::!!*%%:::%*:::::::**:*%%%%$%%%%%%%%%%
+%%$$%%%%$$$$$$$$%%%%*:!$$$*%&$%$$*%$%%@@::!@!:::::::!!*::*$%%%%%%%%%%%
+%%%%%%$$$$$$$$$%%%$!.*#@$@&&%*%$@@&@%%&#&@$$$:::::::!!*::*$%%%%%%%%%%%
+%%%%%$$$$$$$$$%%%$!:%&$$*%%:*%*!*!*$$**!$@$*@!:::::!*!:!::!%%%%%%%%%%%
+%%%%%$$$$$$$$%%%$!:%$%%!!$!:::*:%:::%::!**!%*%:::::!%$:::::!%%%%%%%%%%
+%%%%%%$$$$$$%%%$*:**%%%:$%:::**:$:::$::**%:::%::::::%$!::!::*$%%%%%%%%
+%%%%%%%$$$$%%%%%:*!!$%!*%*:!!%*!$!:!$!:**%!::%!:::::%%!::!*::%@%%%%%%%
+%%%%%%%%$%%%%%$!**:%$%!%%%%*****%***$!:****!!%*:::::%%*::*$::!$%%%%%%$
+$$$$$$$$%%%%%$%%$:!%%%%***!:::::::*%%%%%%**!!%*:::::%%*::*$::!$%%%%%$$
+$$$$$$$%%%%%%$%&!:*$$**!%!!:::::::::!*%*$%$*!$!:::::%$%::%$:*:$$!$%$$$
+$$$$$$%%%%%%%@$%::*%$%%$$$%::::::::*%$$@@@&$!$::::::$%%::%$:*:$$:%$$$$
+$$$$$%%%%%%%%$%!::%!*%%%$@@*:::::::!:*$$@@$%@*::::::$*%::$$:%!$$!!$$$$
+$$$$%%%%%%%%$*%!!!%!!*!!!!:::::::::::!***::!@::::::!%%%!!$%!%*%@*!$$$$
+$$$%%%%%%%%%$**!!%*!!!%::::!!::::::::::::::**:::::!***%**@*%$%$$**$$$$
+$%%%%%%%$$$$%**!*!!!!!%!::::::::::::::::::!%:::::!*%!$*%%@*$$%@%*$$$$%
+%%%%%%$$$$$$****!!!!!!*%::::::::::::::::::%*!!!%!**$$@$$$%%%%%$$$$$$%%
+%%%%%%$$%%%$!*%!!!!!:**$%!::::::!!::::***%%*%*****$$@$$$%%%%$%%%%%%%$$
+%%%$$$%%%%$!!!!!!!!:!$%%%%%%*!:::::!!*%%$*!!!:!!*%&&&%%%$#S&@$$&$&S#@&
+%%$$$$$$@%%::!!!!!::%@%%%%%%$$*%%%%%**%@$::::::!*$@@@@S#SSSSSSSSSSSSSS
+%$$$$$$%#S*:::::::::&#####&&S@%@S#$@&#SS*:::::!*%$@$&SSSSSSSSSSSSSSSSS
+%%$$$%%$S#::::!!:::!$*$@#SB#%!!#SSSS##S@:!::!:**SS##SSSSSSSSSSSSSSSSSS
+%%%%%%@#S@:::!!!!!$S%.:%##%..*##@&####S%:!:!!!**SSSSBSSSS&S@%&##SSSSSS
+%%%%%%$SS%!!!!!!!!!**.*S&!.*&S@$$$@###&!!!!!:!!$SSSSBSSSS@$$@##SSSSSSS
+%$$$$&#S#*!!!!!!!!:!!:@$!%&SS@$$$@@##S@:!!!!!*!@S#&&@@$*%@##SSSSSSSSSS
+%@SSSSSS@!!!!!!!!!!!!$@@#SS#@$&SSSSSSSS%!!!!:*%:$&!::.%#SSSSSSSSSSSSSS
+#SSS##S&%!!!!!!!!!!@&#####&@$&SSSSSSSS%!!!!:*%*!%!::%#BSSSSSSSSSSSSSS
+SSS##S#$%!!!!!!!*$&######@$$@$&SSSS###S&*!!!!:%*!!%::@SSSSSSSSSSSSSSSS
+SSSSSS$%*!!!!!%@#######&$$@$&SSSS###S@*!!!!:%*!!%::@BSSSSSSSSSSSSSSSSS
+SSSSS#$%*!!!%&########@$$$$@SSS#####S@*!!!!!**!!%!&SSSSSSSSSSSSSSSSSSS
+EOF
+}
+
+show_image >> /etc/logo.sh 2>&1
+
+chmod +x /etc/logo.sh
+
+curl -Ls https://raw.githubusercontent.com/kalilovers/LightKnightBBR/main/bbr.py --ipv4 -o /tmp/bbr.py
+python3 /tmp/bbr.py
