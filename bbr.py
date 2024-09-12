@@ -51,8 +51,9 @@ def show_main_menu():
     print("\nLightKnight Simple Script For Simple and Stable BBR")
     print("1_BBR Fq")
     print("2_BBR Fq_Codel(Recommend - Especially For IPSec And Local TUNS)")
-    print("3_Restore Default BBR/Settings")
-    print("4_Speed Test")
+    print("3_CakePlus (With BBR)")
+    print("4_Restore Default BBR/Settings")
+    print("5_Speed Test")
     print("0_Exit")
 
 def show_fq_menu():
@@ -63,6 +64,12 @@ def show_fq_menu():
 
 def show_fq_codel_menu():
     print("\nFq_Codel")
+    print("1_Delete Old File Then Setup(+Backup)")
+    print("2_Setup Without Delete")
+    print("0_Back")
+
+def show_cake_menu():
+    print("\nCakePlus")
     print("1_Delete Old File Then Setup(+Backup)")
     print("2_Setup Without Delete")
     print("0_Back")
@@ -78,19 +85,35 @@ def show_speed_test_menu():
 def show_iperf_menu():
     print("\nChoose which one you are:")
     print("1_Client (iran or...)")
-    print("2_Server (Kharej/Traget or...)")
+    print("2_Server (Kharej/Target or...)")
     print("0_Back")
 
-def prompt_restart():
-    while True:
-        choice = input("The mission was successfully completed. Do you want to restart? (Required) Yes or No: ").lower()
-        if choice in ['n', 'no']:
-            break
-        elif choice in ['y', 'yes']:
-            os.system("reboot")
-            break
+def install_required_packages():
+    print("Checking and installing required packages...")
+    required_packages = ['iproute2', 'iptables']
+    missing_packages = []
+    for package in required_packages:
+        result = subprocess.run(['dpkg', '-s', package], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        if result.returncode != 0:
+            missing_packages.append(package)
+    
+    if missing_packages:
+        print(f"The following packages are not installed: {', '.join(missing_packages)}")
+        
+        install_confirm = input("Do you want to install these packages? (y/n): ").strip().lower()
+        
+        if install_confirm in ['y', 'yes']:
+            print(f"Installing: {', '.join(missing_packages)}")
+            subprocess.run(['apt', 'update'])
+            subprocess.run(['apt', 'install', '-y'] + missing_packages)
+            print("Required packages have been installed.")
         else:
-            print("Please enter Yes or No.")
+            print("Installation of required packages was skipped.")
+            return False
+    else:
+        print("All required packages are installed.")
+    
+    return True
 
 def check_kernel_and_os():
     print("Checking the compatibility of operating system and kernel...")
@@ -103,11 +126,7 @@ def check_kernel_and_os():
                 distro = line.strip().split("=")[1].strip('"').lower()
                 break
     except FileNotFoundError:
-        try:
-            distro_info = platform.linux_distribution()
-            distro = distro_info[0].lower()
-        except AttributeError:
-            distro = ""
+        distro = ""
 
     if distro not in ['ubuntu', 'debian']:
         print("The operating system is not supported. Only Ubuntu and Debian are supported.")
@@ -129,95 +148,58 @@ def check_kernel_and_os():
         print(f"Kernel version {kernel_version} is not supported. Requires version 4.9 or higher.")
         return False
 
-def install_required_packages():
-    print("Checking and installing required packages...")
-    required_packages = ['iproute2', 'iptables']
-    missing_packages = []
-    for package in required_packages:
-        result = subprocess.run(['dpkg', '-s', package], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        if result.returncode != 0:
-            missing_packages.append(package)
-    if missing_packages:
-        print(f"The following packages are not installed and are being installed: {', '.join(missing_packages)}")
-        subprocess.run(['apt', 'update'])
-        subprocess.run(['apt', 'install', '-y'] + missing_packages)
-    else:
-        print("All required packages are installed.")
-    return True
-
-def activate_ecn():
-    print("Activating ECN...")
+def check_kernel_and_os_cake():
+    print("Checking the compatibility of operating system and kernel for Cake...")
     try:
-        with open("/proc/sys/net/ipv4/tcp_ecn", "r") as f:
-            ecn_status = f.read().strip()
-        if ecn_status == "1":
-            print("ECN is already active.")
-            return True
-    except:
-        pass
+        with open("/etc/os-release", "r") as f:
+            lines = f.readlines()
+        distro = ""
+        for line in lines:
+            if line.startswith("ID="):
+                distro = line.strip().split("=")[1].strip('"').lower()
+                break
+    except FileNotFoundError:
+        distro = ""
 
+    if distro not in ['ubuntu', 'debian']:
+        print("The operating system is not supported. Only Ubuntu and Debian are supported.")
+        return False
+
+    kernel_version = platform.release()
+    version_numbers = kernel_version.split(".")
+    try:
+        kernel_major = int(version_numbers[0])
+        kernel_minor = int(version_numbers[1])
+    except (IndexError, ValueError):
+        print(f"Kernel version {kernel_version} could not be detected.")
+        return False
+
+    if kernel_major > 4 or (kernel_major == 4 and kernel_minor >= 19):
+        print(f"The kernel version is compatible with Cake and BBR.")
+        return True
+    else:
+        print(f"Kernel version {kernel_version} is not supported. Requires version 4.19 or higher.")
+        return False
+
+def activate_ecn_persistent():
+    print("Activating ECN persistently...")
     try:
         with open("/etc/sysctl.conf", "a") as f:
             f.write("\n# Enable ECN\n")
             f.write("net.ipv4.tcp_ecn = 1\n")
         subprocess.run(['sysctl', '-p'])
-        print("ECN Activated successfully.")
+        print("ECN activated and will remain active after reboot.")
         return True
     except Exception as e:
         print(f"ECN activation error: {e}")
         return False
 
-def setup_qdisc(algorithm):
-    print("Setting the queuing algorithm...")
-    try:
-        interfaces = os.listdir("/sys/class/net/")
-        if 'lo' in interfaces:
-            interfaces.remove('lo')
-        if not interfaces:
-            print("Network interface not found.")
-            return False
-        interface = interfaces[0]
-    except Exception as e:
-        print(f"Error identifying the network interface: {e}")
-        return False
-
-    try:
-        subprocess.run(['tc', 'qdisc', 'replace', 'dev', interface, 'root', algorithm], check=True)
-        print(f"The {algorithm} queuing algorithm was set on the {interface} interface.")
-        return True
-    except subprocess.CalledProcessError:
-        print(f"Error in setting the queuing algorithm {algorithm}.")
-        return False
-
-def make_qdisc_persistent(algorithm):
-    print("Creating systemd service to preserve qdisc settings after reboot...")
-    service_content = f"""[Unit]
-Description=Set qdisc {algorithm} on network interface
-After=network.target
-
-[Service]
-Type=oneshot
-ExecStart=/sbin/tc qdisc replace dev eth0 root {algorithm}
-RemainAfterExit=yes
-
-[Install]
-WantedBy=multi-user.target
-"""
-    service_path = "/etc/systemd/system/qdisc-setup.service"
-    try:
-        with open(service_path, "w") as f:
-            f.write(service_content)
-        subprocess.run(['systemctl', 'daemon-reload'])
-        subprocess.run(['systemctl', 'enable', 'qdisc-setup.service'])
-        subprocess.run(['systemctl', 'start', 'qdisc-setup.service'])
-        print("The systemd service was successfully created and activated.")
-        return True
-    except Exception as e:
-        print(f"Error creating systemd service: {e}")
-        return False
-
 def configure_bbr(algorithm):
     print("Setting up BBR...")
+
+    if activate_ecn_persistent():
+        print("ECN has been activated with BBR.")
+
     try:
         with open("/etc/sysctl.conf", "a") as f:
             f.write(f"\n# {algorithm} Light Knight\n")
@@ -237,6 +219,83 @@ def configure_bbr(algorithm):
 
     return True
 
+def setup_qdisc(algorithm):
+    print("Setting the queuing algorithm on all network interfaces...")
+    try:
+        interfaces = os.listdir("/sys/class/net/")
+        if 'lo' in interfaces:
+            interfaces.remove('lo')
+        if not interfaces:
+            print("No network interfaces found.")
+            return False
+
+        for interface in interfaces:
+            try:
+                subprocess.run(['tc', 'qdisc', 'replace', 'dev', interface, 'root', algorithm], check=True)
+                print(f"The {algorithm} queuing algorithm was set on the {interface} interface.")
+            except subprocess.CalledProcessError:
+                print(f"Error in setting the queuing algorithm on {interface}.")
+                return False
+
+        return True
+    except Exception as e:
+        print(f"Error identifying network interfaces: {e}")
+        return False
+
+
+def make_qdisc_persistent(algorithm):
+    print("Creating systemd service to preserve qdisc settings after reboot on all interfaces...")
+
+    interfaces = os.listdir("/sys/class/net/")
+    if 'lo' in interfaces:
+        interfaces.remove('lo')
+
+    if not interfaces:
+        print("No network interfaces found.")
+        return False
+
+    exec_commands = "\n".join([f"/sbin/tc qdisc replace dev {interface} root {algorithm}" for interface in interfaces])
+
+    service_content = f"""[Unit]
+Description=Set qdisc {algorithm} on all network interfaces
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c '{exec_commands}'
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+"""
+    service_path = "/etc/systemd/system/qdisc-setup.service"
+    try:
+        with open(service_path, "w") as f:
+            f.write(service_content)
+        subprocess.run(['systemctl', 'daemon-reload'])
+        subprocess.run(['systemctl', 'enable', 'qdisc-setup.service'])
+        subprocess.run(['systemctl', 'start', 'qdisc-setup.service'])
+        print("The systemd service was successfully created and activated for all interfaces.")
+        return True
+    except Exception as e:
+        print(f"Error creating systemd service: {e}")
+        return False
+
+
+def prompt_restart():
+    while True:
+        try:
+            choice = input("The mission was successfully completed. Do you want to restart? (Required) Yes or No: ").strip().lower()
+            if choice in ['n', 'no']:
+                break
+            elif choice in ['y', 'yes']:
+                os.system("reboot")
+                break
+            else:
+                print("Please enter Yes or No.")
+        except UnicodeDecodeError:
+            print("Invalid input. Please use only English characters.")
+
 def delete_old_file_then_setup(algorithm):
     print("Deleting old files and setting new (+Backup)...")
     backup_path = "/etc/sysctl.confback"
@@ -247,6 +306,8 @@ def delete_old_file_then_setup(algorithm):
             shutil.copy(original_path, backup_path)
             os.remove(original_path)
             print("The old sysctl.conf file was deleted and backed up.")
+        else:
+            print("No original sysctl.conf file to delete.")
     except Exception as e:
         print(f"Error deleting old files: {e}")
         return False
@@ -259,11 +320,23 @@ def delete_old_file_then_setup(algorithm):
 
 def setup_without_delete(algorithm):
     print("Setting up without deleting old files...")
+    backup_path = "/etc/sysctl.confback"
+    original_path = "/etc/sysctl.conf"
+
+    try:
+        if not os.path.exists(backup_path):
+            shutil.copy(original_path, backup_path)
+            print("sysctl.conf file backed up successfully.")
+    except Exception as e:
+        print(f"Error backing up sysctl.conf: {e}")
+        return False
+
     if configure_bbr(algorithm):
         prompt_restart()
     else:
         print("BBR settings encountered a problem.")
     return True
+
 
 def restore():
     print("Restoring default settings...")
@@ -271,20 +344,18 @@ def restore():
     original_path = "/etc/sysctl.conf"
 
     try:
-        if os.path.exists(original_path):
-            os.remove(original_path)
-            print("Removed the original sysctl.conf file.")
-    except Exception as e:
-        print(f"Error deleting main sysctl.conf file: {e}")
-        return False
-
-    try:
         if os.path.exists(backup_path):
-            os.rename(backup_path, original_path)
+            if os.path.exists(original_path):
+                os.remove(original_path)
+                print("Removed the original sysctl.conf file.")
+            shutil.copy(backup_path, original_path)
             print("Restored sysctl.conf backup.")
+            os.remove(backup_path)
+            print("Backup sysctl.conf file removed.")
+        else:
+            print("No backup found for sysctl.conf. The original file was not removed.")  
     except Exception as e:
         print(f"Error restoring sysctl.conf backup: {e}")
-        return False
 
     service_path = "/etc/systemd/system/qdisc-setup.service"
     try:
@@ -293,23 +364,35 @@ def restore():
             os.remove(service_path)
             subprocess.run(['systemctl', 'daemon-reload'])
             print("The systemd service related to qdisc was removed.")
+        if os.path.exists("/etc/systemd/system/multi-user.target.wants/qdisc-setup.service"):
+            os.remove("/etc/systemd/system/multi-user.target.wants/qdisc-setup.service")
+            print("Removed /etc/systemd/system/multi-user.target.wants/qdisc-setup.service.")
     except Exception as e:
-        print(f"Error deleting service systemd: {e}")
+        print(f"Error deleting systemd service: {e}")
 
     try:
-        subprocess.run(['tc', 'qdisc', 'delete', 'dev', 'eth0', 'root'], check=True)
-        print("Default qdisc settings are restored.")
-    except subprocess.CalledProcessError:
-        print("Default qdisc settings could not be reset or are not currently set.")
+        interfaces = os.listdir("/sys/class/net/")
+        if 'lo' in interfaces:
+            interfaces.remove('lo')
+
+        for interface in interfaces:
+            try:
+                subprocess.run(['tc', 'qdisc', 'delete', 'dev', interface, 'root'], check=True)
+                print(f"Default qdisc settings on {interface} were restored.")
+            except subprocess.CalledProcessError:
+                print(f"Default qdisc settings could not be reset on {interface} or are not currently set.")
+    except Exception as e:
+        print(f"Error resetting qdisc settings: {e}")
 
     try:
         subprocess.run(['sysctl', '-p'])
         print("sysctl settings applied.")
     except Exception as e:
-        print(f"Error applying settings sysctl: {e}")
+        print(f"Error applying sysctl settings: {e}")
 
     prompt_restart()
     return True
+
 
 def run_bench_method1():
     print("Running Bench Method1...")
@@ -360,12 +443,10 @@ def main():
                 if fq_choice == '1':
                     if check_kernel_and_os():
                         install_required_packages()
-                        activate_ecn()
                         delete_old_file_then_setup("fq")
                 elif fq_choice == '2':
                     if check_kernel_and_os():
                         install_required_packages()
-                        activate_ecn()
                         setup_without_delete("fq")
                 elif fq_choice == '0':
                     break
@@ -378,20 +459,34 @@ def main():
                 if fq_codel_choice == '1':
                     if check_kernel_and_os():
                         install_required_packages()
-                        activate_ecn()
                         delete_old_file_then_setup("fq_codel")
                 elif fq_codel_choice == '2':
                     if check_kernel_and_os():
                         install_required_packages()
-                        activate_ecn()
                         setup_without_delete("fq_codel")
                 elif fq_codel_choice == '0':
                     break
                 else:
                     print("Invalid choice, please try again.")
         elif choice == '3':
-            restore()
+            while True:
+                show_cake_menu()
+                cake_choice = input("Please enter your choice: ")
+                if cake_choice == '1':
+                    if check_kernel_and_os_cake():
+                        install_required_packages()
+                        delete_old_file_then_setup("cake")
+                elif cake_choice == '2':
+                    if check_kernel_and_os_cake():
+                        install_required_packages()
+                        setup_without_delete("cake")
+                elif cake_choice == '0':
+                    break
+                else:
+                    print("Invalid choice, please try again.")
         elif choice == '4':
+            restore()
+        elif choice == '5':
             while True:
                 show_speed_test_menu()
                 speed_test_choice = input("Please enter your choice: ")
