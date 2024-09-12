@@ -1,4 +1,4 @@
-# LightKnightBBR/SpeedTest V1.1
+# LightKnightBBR/SpeedTest V1.2
 تشکر ویژه از : 
 https://github.com/Azumi67
 
