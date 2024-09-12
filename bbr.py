@@ -244,7 +244,7 @@ def setup_qdisc(algorithm):
 
 
 def make_qdisc_persistent(algorithm):
-    print("Creating systemd service to preserve qdisc settings after reboot on all interfaces...")
+    print("Creating systemd service to preserve qdisc settings after reboot on all network interfaces...")
 
     interfaces = os.listdir("/sys/class/net/")
     if 'lo' in interfaces:
@@ -254,7 +254,7 @@ def make_qdisc_persistent(algorithm):
         print("No network interfaces found.")
         return False
 
-    exec_commands = "\n".join([f"/sbin/tc qdisc replace dev {interface} root {algorithm}" for interface in interfaces])
+    exec_commands = " && ".join([f"/sbin/tc qdisc replace dev {interface} root {algorithm}" for interface in interfaces])
 
     service_content = f"""[Unit]
 Description=Set qdisc {algorithm} on all network interfaces
