@@ -2,6 +2,11 @@
 special thanks to : 
 https://github.com/Azumi67
 
+Special thanks to OPIran Club for publishing practical tools and tutorials:
+https://t.me/OPIran_official
+
+A Kafing Moratabing :0
+
 ----------------------------------------------------------------
 [English](/README.md)   |   [فارسی](/README.per.md)
 
@@ -17,6 +22,19 @@ https://github.com/Azumi67
 - ECN (Explicit Congestion Notification) activation
 - The queuing algorithm (fq or fq_codel) for the network interface and qdisk in the operating system and network cards that do not support or are not completely set due to reasons such as the old network card, etc. will be set by automatic checking by the script = **More optimization**
 Also, the feedback messages have been improved so that users are better informed about the status of the execution of the steps.
+
+**V 1.2:**
+- Cake algorithm was added as an advanced Qos algorithm in combination with BBR:
+
+**Cake will be used as a professional Qos algorithm in the queuing layer (Qdisc) and it will manage traffic queuing in the best possible way and minimize jitter and delay.
+And BBR will be used in the congestion control layer as Tcp Congestion Control and provides the most optimal data transmission speed without causing congestion in TCP traffic.**
+- In both installation modes, the original file is backed up.
+- Improvements in the option to restore settings.
+- Improvements in ecn applications
+- Improvements in applying the algorithm
+- Qos-qdisk algorithm will be applied on different interfaces, such as when the IP6 interface is separate.
+- Improvements in installing packages
+- Improvements in running speed test and...
 
   </details>
 </div>
