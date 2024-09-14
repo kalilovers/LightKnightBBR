@@ -45,7 +45,7 @@ SSSSS#$%*!!!%&########@$$$$@SSS#####S@*!!!!!**!!%!&SSSSSSSSSSSSSSSSSSS
 
 def show_main_menu():
     show_image()
-    print("\nV 1.2")
+    print("\nV 1.3")
     print("\nSpecial thanks to the Queen")
     print("\nView the project on GitHub: https://github.com/kalilovers")
     print("\nLightKnight Simple Script For Simple and Stable BBR")
@@ -108,8 +108,8 @@ def install_required_packages():
             subprocess.run(['apt', 'install', '-y'] + missing_packages)
             print("Required packages have been installed.")
         else:
-            print("Installation of required packages was skipped.")
-            return False
+            print("Installation of required packages was skipped. Exiting the script.")
+            exit(1)
     else:
         print("All required packages are installed.")
     
@@ -219,45 +219,77 @@ def configure_bbr(algorithm):
 
     return True
 
-def setup_qdisc(algorithm):
-    print("Setting the queuing algorithm on all network interfaces...")
+def is_physical_interface(interface):
     try:
-        interfaces = os.listdir("/sys/class/net/")
-        if 'lo' in interfaces:
-            interfaces.remove('lo')
+        result = subprocess.run(['ethtool', interface], capture_output=True, text=True)
+        if 'Link detected: yes' in result.stdout:
+            return True
+    except Exception:
+        return False
+    return False
+
+def get_main_interfaces():
+    main_interfaces = []
+    
+    interfaces = os.listdir("/sys/class/net/")
+    
+    for interface in interfaces:
+        if interface == "lo":
+            continue
+        
+        if is_physical_interface(interface):
+            main_interfaces.append(interface)
+        else:
+            result = subprocess.run(['ip', 'addr', 'show', interface], capture_output=True, text=True)
+            if 'inet ' in result.stdout or 'inet6 ' in result.stdout:
+                if not any(virtual in interface for virtual in ['gre', 'sit', 'veth', 'vxlan', 'docker', 'geneve', 'tun', 'tap', 'bridge']):
+                    if 'altname' in result.stdout:
+                        altname_lines = [line for line in result.stdout.splitlines() if 'altname' in line]
+                        for altname_line in altname_lines:
+                            altnames = altname_line.split()
+                            for altname in altnames[1:]:
+                                if altname not in main_interfaces:
+                                    main_interfaces.append(altname)
+                    else:
+                        main_interfaces.append(interface)
+    
+    return main_interfaces
+
+def setup_qdisc(algorithm):
+    print("Setting the queuing algorithm on main network interfaces...")
+    try:
+        interfaces = get_main_interfaces()
         if not interfaces:
             print("No network interfaces found.")
-            return False
+            exit(1)
 
         for interface in interfaces:
             try:
                 subprocess.run(['tc', 'qdisc', 'replace', 'dev', interface, 'root', algorithm], check=True)
                 print(f"The {algorithm} queuing algorithm was set on the {interface} interface.")
             except subprocess.CalledProcessError:
-                print(f"Error in setting the queuing algorithm on {interface}.")
-                return False
+                print(f"Error in setting the queuing algorithm on {interface}. Exiting script.")
+                exit(1)
 
         return True
     except Exception as e:
-        print(f"Error identifying network interfaces: {e}")
-        return False
+        print(f"Error identifying network interfaces: {e}. Exiting script.")
+        exit(1)
 
 
 def make_qdisc_persistent(algorithm):
-    print("Creating systemd service to preserve qdisc settings after reboot on all network interfaces...")
+    print("Creating systemd service to preserve qdisc settings after reboot on main interfaces only...")
 
-    interfaces = os.listdir("/sys/class/net/")
-    if 'lo' in interfaces:
-        interfaces.remove('lo')
-
+    interfaces = get_main_interfaces()
+    
     if not interfaces:
-        print("No network interfaces found.")
-        return False
+        print("No main network interfaces found. Exiting script.")
+        exit(1)
 
     exec_commands = " && ".join([f"/sbin/tc qdisc replace dev {interface} root {algorithm}" for interface in interfaces])
 
     service_content = f"""[Unit]
-Description=Set qdisc {algorithm} on all network interfaces
+Description=Set qdisc {algorithm} on main network interfaces
 After=network.target
 
 [Service]
@@ -275,24 +307,24 @@ WantedBy=multi-user.target
         subprocess.run(['systemctl', 'daemon-reload'])
         subprocess.run(['systemctl', 'enable', 'qdisc-setup.service'])
         subprocess.run(['systemctl', 'start', 'qdisc-setup.service'])
-        print("The systemd service was successfully created and activated for all interfaces.")
+        print("The systemd service was successfully created and activated for main interfaces.")
         return True
     except Exception as e:
-        print(f"Error creating systemd service: {e}")
-        return False
-
+        print(f"Error creating systemd service: {e}. Exiting script.")
+        exit(1)
 
 def prompt_restart():
     while True:
         try:
             choice = input("The mission was successfully completed. Do you want to restart? (Required) Yes or No: ").strip().lower()
+
             if choice in ['n', 'no']:
                 break
             elif choice in ['y', 'yes']:
                 os.system("reboot")
                 break
             else:
-                print("Please enter Yes or No.")
+                print("Invalid input. Please enter Yes or No.")
         except UnicodeDecodeError:
             print("Invalid input. Please use only English characters.")
 
@@ -337,7 +369,6 @@ def setup_without_delete(algorithm):
         print("BBR settings encountered a problem.")
     return True
 
-
 def restore():
     print("Restoring default settings...")
     backup_path = "/etc/sysctl.confback"
@@ -353,7 +384,7 @@ def restore():
             os.remove(backup_path)
             print("Backup sysctl.conf file removed.")
         else:
-            print("No backup found for sysctl.conf. The original file was not removed.")  
+            print("No backup found for sysctl.conf.")
     except Exception as e:
         print(f"Error restoring sysctl.conf backup: {e}")
 
@@ -383,6 +414,16 @@ def restore():
                 print(f"Default qdisc settings could not be reset on {interface} or are not currently set.")
     except Exception as e:
         print(f"Error resetting qdisc settings: {e}")
+
+    try:
+        for interface in interfaces:
+            try:
+                subprocess.run(['tc', 'qdisc', 'delete', 'dev', interface, 'parent', '1:'], check=True)
+                print(f"Non-root qdisc on {interface} removed.")
+            except subprocess.CalledProcessError:
+                print(f"No non-root qdisc found on {interface}.")
+    except Exception as e:
+        print(f"Error removing non-root qdisc: {e}")
 
     try:
         subprocess.run(['sysctl', '-p'])
