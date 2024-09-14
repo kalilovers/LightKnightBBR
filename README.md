@@ -1,8 +1,8 @@
-# LightKnightBBR/SpeedTest V1.2
+# LightKnightBBR/SpeedTest V1.3
 special thanks to : 
 https://github.com/Azumi67
 
-Special thanks to OPIran Club for publishing practical tools and tutorials:
+Special thanks to OPIran Club for publishing practical Software and tutorials:
 https://t.me/OPIran_official
 
 A Kafing Moratabing :0
@@ -36,6 +36,13 @@ And BBR will be used in the congestion control layer as Tcp Congestion Control a
 - Improvements in installing packages
 - Improvements in running speed test and...
 
+**V 1.3:**
+
+- Optimization in the configuration of algorithms
+- Algorithms will be applied only in the main interfaces to avoid further processing and reverse optimization.
+- Optimization: fixing the detection problem and... in some operating systems.
+- The performance of the recovery option was optimized. Be sure to restore and then reboot before applying the new settings.
+
   </details>
 </div>
 
@@ -46,12 +53,12 @@ And BBR will be used in the congestion control layer as Tcp Congestion Control a
     <summary><strong>Description</strong></summary>
 
 
-**A project to config BBR and run SpeedTest**
+**A project to config BBR,CakePlus and run SpeedTest**
 
-- **BBR :**
-- Full config BBR settings
-- Backup and restore applied settings of BBR
-- Currently, 2 types of BBR without manipulation have been added.
+**BBR,CakePlus :**
+- Full config BBR And CakePlus settings
+- Backup and restore applied settings of BBR And CakePlus
+- Currently, 2 types of BBR , And Cake combined with BBR added.
 - Other methods will be added soon (with the ability to change the shape of the traffic)
 
 - **speedtest :**
@@ -73,7 +80,7 @@ And BBR will be used in the congestion control layer as Tcp Congestion Control a
     <summary><strong>Tips</strong></summary>
     
 - **My suggestion: use **fq_codel** and at least Ubuntu version 20.04 and above and Debian 10 and above (because bbrv2 is used) especially for vpn, games, calls, etc.**
-- Supported operating systems » Ubuntu version 18 and above - Debian 10 and above
+- **Supported operating systems » Ubuntu version 18 and above - Debian 10 and above**
 -  run in root user or with **sudo** 
 - A **reboot** is required to apply changes to the interface
   </details>
