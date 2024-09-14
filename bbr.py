@@ -219,82 +219,79 @@ def configure_bbr(algorithm):
 
     return True
 
-def is_physical_interface(interface):
-    try:
-        result = subprocess.run(['ethtool', interface], capture_output=True, text=True)
-        if 'Link detected: yes' in result.stdout:
-            return True
-    except Exception:
-        return False
-    return False
 
-def get_main_interfaces():
-    main_interfaces = []
-    
-    interfaces = os.listdir("/sys/class/net/")
-    
-    for interface in interfaces:
-        if interface == "lo":
-            continue
-        
-        if is_physical_interface(interface):
-            main_interfaces.append(interface)
-        else:
-            result = subprocess.run(['ip', 'addr', 'show', interface], capture_output=True, text=True)
-            if 'inet ' in result.stdout or 'inet6 ' in result.stdout:
-                if not any(virtual in interface for virtual in ['gre', 'sit', 'veth', 'vxlan', 'docker', 'geneve', 'tun', 'tap', 'bridge']):
-                    if 'altname' in result.stdout:
-                        altname_lines = [line for line in result.stdout.splitlines() if 'altname' in line]
-                        for altname_line in altname_lines:
-                            altnames = altname_line.split()
-                            for altname in altnames[1:]:
-                                if altname not in main_interfaces:
-                                    main_interfaces.append(altname)
-                    else:
-                        main_interfaces.append(interface)
-    
-    return main_interfaces
-
-def setup_qdisc(algorithm):
-    print("Setting the queuing algorithm on main network interfaces...")
+def get_main_interface():
+    """Find the main interface based on 'UP' status and highest MTU."""
     try:
-        interfaces = get_main_interfaces()
-        if not interfaces:
-            print("No network interfaces found.")
-            exit(1)
+        interfaces = os.listdir("/sys/class/net/")
+        main_interface = None
+        highest_mtu = -1
+        virtual_interfaces = ['tun', 'docker', 'veth', 'lo', 'br', 'gre', 'sit', 'vxlan', 'tap', 'gretap', 'ipip']
 
         for interface in interfaces:
-            try:
-                subprocess.run(['tc', 'qdisc', 'replace', 'dev', interface, 'root', algorithm], check=True)
-                print(f"The {algorithm} queuing algorithm was set on the {interface} interface.")
-            except subprocess.CalledProcessError:
-                print(f"Error in setting the queuing algorithm on {interface}. Exiting script.")
-                exit(1)
+            if any(interface.startswith(v) for v in virtual_interfaces):
+                continue
 
-        return True
+            result = subprocess.run(['ip', 'addr', 'show', interface], capture_output=True, text=True)
+            if "UP" in result.stdout:
+                try:
+                    with open(f"/sys/class/net/{interface}/mtu", "r") as mtu_file:
+                        mtu = int(mtu_file.read().strip())
+                        if mtu > highest_mtu:
+                            highest_mtu = mtu
+                            main_interface = interface
+                except Exception as e:
+                    print(f"Error reading MTU for {interface}: {e}")
+
+        if main_interface:
+            print(f"Main interface detected: {main_interface} with MTU {highest_mtu}")
+            return main_interface
+        else:
+            print("No main interface found.")
+            return None
+
     except Exception as e:
-        print(f"Error identifying network interfaces: {e}. Exiting script.")
-        exit(1)
+        print(f"Error detecting main interface: {e}")
+        return None
+
+
+def setup_qdisc(algorithm):
+    """Apply the Qdisc to the main interface."""
+    print("Setting the queuing algorithm on the main network interface...")
+    interface = get_main_interface()
+    
+    if not interface:
+        print("No main network interface found. Exiting script.")
+        return False
+
+    try:
+        subprocess.run(['tc', 'qdisc', 'replace', 'dev', interface, 'root', algorithm], check=True)
+        print(f"The {algorithm} queuing algorithm was set on the {interface} interface.")
+        return True
+    except subprocess.CalledProcessError as e:
+        print(f"Error in setting the queuing algorithm on {interface}: {e}. Exiting script.")
+        return False
 
 
 def make_qdisc_persistent(algorithm):
-    print("Creating systemd service to preserve qdisc settings after reboot on main interfaces only...")
+    """Create a systemd service to persist the Qdisc settings after reboot."""
+    print("Creating systemd service to preserve qdisc settings after reboot on the main interface...")
 
-    interfaces = get_main_interfaces()
+    interface = get_main_interface()
     
-    if not interfaces:
-        print("No main network interfaces found. Exiting script.")
-        exit(1)
+    if not interface:
+        print("No main network interface found. Exiting script.")
+        return False
 
-    exec_commands = " && ".join([f"/sbin/tc qdisc replace dev {interface} root {algorithm}" for interface in interfaces])
+    exec_command = f"/sbin/tc qdisc replace dev {interface} root {algorithm}"
 
     service_content = f"""[Unit]
-Description=Set qdisc {algorithm} on main network interfaces
+Description=Set qdisc {algorithm} on the main network interface
 After=network.target
 
 [Service]
 Type=oneshot
-ExecStart=/bin/sh -c '{exec_commands}'
+ExecStart=/bin/sh -c '{exec_command}'
 RemainAfterExit=yes
 
 [Install]
@@ -307,11 +304,11 @@ WantedBy=multi-user.target
         subprocess.run(['systemctl', 'daemon-reload'])
         subprocess.run(['systemctl', 'enable', 'qdisc-setup.service'])
         subprocess.run(['systemctl', 'start', 'qdisc-setup.service'])
-        print("The systemd service was successfully created and activated for main interfaces.")
+        print("The systemd service was successfully created and activated for the main interface.")
         return True
     except Exception as e:
         print(f"Error creating systemd service: {e}. Exiting script.")
-        exit(1)
+        return False
 
 def prompt_restart():
     while True:
@@ -401,29 +398,17 @@ def restore():
     except Exception as e:
         print(f"Error deleting systemd service: {e}")
 
-    try:
-        interfaces = os.listdir("/sys/class/net/")
-        if 'lo' in interfaces:
-            interfaces.remove('lo')
-
-        for interface in interfaces:
-            try:
-                subprocess.run(['tc', 'qdisc', 'delete', 'dev', interface, 'root'], check=True)
-                print(f"Default qdisc settings on {interface} were restored.")
-            except subprocess.CalledProcessError:
-                print(f"Default qdisc settings could not be reset on {interface} or are not currently set.")
-    except Exception as e:
-        print(f"Error resetting qdisc settings: {e}")
-
-    try:
-        for interface in interfaces:
-            try:
-                subprocess.run(['tc', 'qdisc', 'delete', 'dev', interface, 'parent', '1:'], check=True)
-                print(f"Non-root qdisc on {interface} removed.")
-            except subprocess.CalledProcessError:
-                print(f"No non-root qdisc found on {interface}.")
-    except Exception as e:
-        print(f"Error removing non-root qdisc: {e}")
+    interface = get_main_interface()
+    if interface:
+        try:
+            subprocess.run(['tc', 'qdisc', 'delete', 'dev', interface, 'root'], check=True)
+            print(f"Default qdisc settings on {interface} were restored.")
+        except subprocess.CalledProcessError:
+            print(f"Default qdisc settings could not be reset on {interface}. Applying fq instead.")
+            subprocess.run(['tc', 'qdisc', 'replace', 'dev', interface, 'root', 'fq'], check=True)
+            print(f"The fq queuing algorithm was set on the {interface} interface.")
+    else:
+        print("No main network interface found to restore settings.")
 
     try:
         subprocess.run(['sysctl', '-p'])
