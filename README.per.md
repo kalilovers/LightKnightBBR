@@ -1,4 +1,4 @@
-# LightKnightBBR/SpeedTest V1.4
+# LightKnight Script for Qdisc and Congestion Control Setup and Speed Testing V1.4
 تشکر ویژه از : 
 https://github.com/Azumi67
 
