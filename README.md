@@ -1,11 +1,9 @@
-# LightKnightBBR/SpeedTest V1.3
+# LightKnightBBR/SpeedTest V1.4
 special thanks to : 
 https://github.com/Azumi67
 
 Special thanks to OPIran Club for publishing practical Software and tutorials:
 https://t.me/OPIran_official
-
-A Kafing Moratabing :0
 
 ----------------------------------------------------------------
 [English](/README.md)   |   [فارسی](/README.per.md)
@@ -13,15 +11,25 @@ A Kafing Moratabing :0
 <div align="left">
   <details>
     <summary><strong>Changelog</strong></summary>
-    
-**V 1.1 :**
-- Optimized
-- Checking the compatibility of the operating system and the kernel
-- Making changes for modern distributions and alternative methods for older systems in Python
-- Check and install required packages
-- ECN (Explicit Congestion Notification) activation
-- The queuing algorithm (fq or fq_codel) for the network interface and qdisk in the operating system and network cards that do not support or are not completely set due to reasons such as the old network card, etc. will be set by automatic checking by the script = **More optimization**
-Also, the feedback messages have been improved so that users are better informed about the status of the execution of the steps.
+
+**V 1.4 :**
+
+- **New :**
+- New Tcp Congestion Control : Hybla and Cubic
+- Status option: displays the current Qdisk and Congestion Control algorithm of the operating system. (For the correct display, it is necessary to reboot the system after every change and configuration and check again)
+- **Changed items :**
+- Menu categories have changed :
+- Option CakePlus > BBR Base > BBR + Cake
+- Each of the Congestion Controls will have the possibility of activation with three types of Qdisk : FQ_CODE, FQ, CAKE.
+- Appearance changes
+- Improved performance
+
+**V 1.3:**
+
+- Optimization in the configuration of algorithms
+- Algorithms will be applied only in the main interfaces to avoid further processing and reverse optimization.
+- Optimization: fixing the detection problem and... in some operating systems.
+- The performance of the recovery option was optimized. Be sure to restore and then reboot before applying the new settings.
 
 **V 1.2:**
 - Cake algorithm was added as an advanced Qos algorithm in combination with BBR:
@@ -36,13 +44,14 @@ And BBR will be used in the congestion control layer as Tcp Congestion Control a
 - Improvements in installing packages
 - Improvements in running speed test and...
 
-**V 1.3:**
-
-- Optimization in the configuration of algorithms
-- Algorithms will be applied only in the main interfaces to avoid further processing and reverse optimization.
-- Optimization: fixing the detection problem and... in some operating systems.
-- The performance of the recovery option was optimized. Be sure to restore and then reboot before applying the new settings.
-
+**V 1.1 :**
+- Optimized
+- Checking the compatibility of the operating system and the kernel
+- Making changes for modern distributions and alternative methods for older systems in Python
+- Check and install required packages
+- ECN (Explicit Congestion Notification) activation
+- The queuing algorithm (fq or fq_codel) for the network interface and qdisk in the operating system and network cards that do not support or are not completely set due to reasons such as the old network card, etc. will be set by automatic checking by the script = **More optimization**
+Also, the feedback messages have been improved so that users are better informed about the status of the execution of the steps.
   </details>
 </div>
 
@@ -53,15 +62,13 @@ And BBR will be used in the congestion control layer as Tcp Congestion Control a
     <summary><strong>Description</strong></summary>
 
 
-**A project to config BBR,CakePlus and run SpeedTest**
+**A project to configure BBR , HYBLA , CUBIC with three algorithms FQ , FQ_CODEL , CAKE and Run SpeedTest**
 
-**BBR,CakePlus :**
-- Full config BBR And CakePlus settings
-- Backup and restore applied settings of BBR And CakePlus
-- Currently, 2 types of BBR , And Cake combined with BBR added.
-- Other methods will be added soon (with the ability to change the shape of the traffic)
+**BBR,HYBLA,CUBIC:**
+- Full configuration
+- Backup and restore applied settings
 
-- **speedtest :**
+**Speed ​​test:**
 
 - 2 Method For Bench.sh speedtest
 
@@ -79,10 +86,12 @@ And BBR will be used in the congestion control layer as Tcp Congestion Control a
   <details>
     <summary><strong>Tips</strong></summary>
     
-- **My suggestion: use **fq_codel** and at least Ubuntu version 20.04 and above and Debian 10 and above (because bbrv2 is used) especially for vpn, games, calls, etc.**
+
+- **My suggestion is at least Ubuntu 20.04 and above (22 and above) and Debian 10 and above (at least 11 or 12 and above) (because bbrv2 is used in newer kernels) especially for vpn, games, calls, etc. is**
 - **Supported operating systems » Ubuntu version 18 and above - Debian 10 and above**
--  run in root user or with **sudo** 
-- A **reboot** is required to apply changes to the interface
+- Be sure to run it in the root user or with **sudo** command
+- **reboot** is required to apply the changes
+- It is recommended to use a similar configuration in tunneling and tunneled servers so that the performance is more optimal and the algorithms of both servers are in harmony with each other. For example, if you have two servers that are tunneled together, activate your desired algorithm . for example, BBR + FQ_CODEL on both servers (if you do not apply it on one of the servers, in fact, that server will used default settings and it algorithm will be different with Optimized server and it will prevent the from full increase of tunnel efficiency and etc.)
   </details>
 </div>
 
