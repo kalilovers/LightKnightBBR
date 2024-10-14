@@ -1,4 +1,4 @@
-# LightKnight Script for Qdisc and Congestion Control Setup and Speed Testing V1.4
+# LightKnight Script for Qdisc and Congestion Control Setup and Speed Testing V1.5
 تشکر ویژه از : 
 https://github.com/Azumi67
 
@@ -13,6 +13,12 @@ https://t.me/OPIran_official
   <details>
     <summary><strong>تغییرات</strong></summary>
     
+**V 1.5 :**
+- تغییرات ظاهری - پیام های خروجی 
+- افزودن برخی پارامترهای بهینه‌سازی برای کاهش بار شبکه بدون کاهش امنیت استاندارد، مناسب برای طیف گسترده‌ای از کاربردها
+- بهبود اسکریپت و ارتقا عملکرد بهینه سازها
+- بهینه سازی Speedtest Ookla
+
 **V 1.4 :**
 - **موارد افزوده شده :**
 - Tcp Congestion Control جدید : Hybla و Cubic
