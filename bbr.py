@@ -37,7 +37,7 @@ def show_image():
 
 def show_main_menu():
     show_image()
-    print(f"{CYAN}V 1.4{RESET}")
+    print(f"{CYAN}V 1.5{RESET}")
     print("Special thanks to the Queen")
     print(f"View the project on GitHub: {BLUE}https://github.com/kalilovers{RESET}")
     print(f"{BLUE}---------------------------------------------------------{RESET}")
@@ -47,7 +47,7 @@ def show_main_menu():
     print("1_ BBR Base (Recommended)")
     print("2_ Hybla Base")
     print("3_ Cubic Base")
-    print("4_ Restore Default BBR/Settings")
+    print("4_ Restore Default Settings")
     print("5_ Speed Test")
     print(f"q_ {RED}Exit{RESET}")
     print("")
@@ -55,7 +55,7 @@ def show_main_menu():
 def show_status_menu():
     congestion_control, qdisc_algorithm = get_current_settings()
     
-    print("\nCurrent Setting:")
+    print(f"\n{GREEN}Current Setting:{RESET}")
     print("")
     print(f"Current Congestion Control : {GREEN}{congestion_control}{RESET}")
     print(f"Current Qdisc Algorithm    : {GREEN}{qdisc_algorithm}{RESET}")
@@ -63,7 +63,7 @@ def show_status_menu():
     print("")
 
 def show_bbr_menu():
-    print("\nBBR Base")
+    print(f"\n{GREEN}BBR Base{RESET}")
     print("")
     print("1_BBR + Fq")
     print("2_BBR + Fq_Codel (Recommended)")
@@ -72,49 +72,52 @@ def show_bbr_menu():
     print("")
 
 def show_fq_menu():
-    print("\nWith Fq")
+    print(f"\n{GREEN}Apply With Fq{RESET}")
     print("")
-    print("1_Delete Old File Then Setup(+Backup)")
-    print("2_Setup Without Delete")
+    print(f"{RED}Warning , Choose carefully :{RESET}")
+    print(f"1_Delete Old File Then Setup+Backup ({GREEN}Recommended for proper optimization{RESET}) ")
+    print(f"2_Setup Without Delete ({YELLOW}If you have special settings in sysctl.conf{RESET})")
     print("0_Back")
     print("")
 
 def show_fq_codel_menu():
-    print("\nWith Fq_Codel")
+    print(f"\n{GREEN}Apply With Fq_Codel{RESET}")
     print("")
-    print("1_Delete Old File Then Setup(+Backup)")
-    print("2_Setup Without Delete")
+    print(f"{RED}Warning , Choose carefully :{RESET}")
+    print(f"1_Delete Old File Then Setup+Backup ({GREEN}Recommended for proper optimization{RESET}) ")
+    print(f"2_Setup Without Delete ({YELLOW}If you have special settings in sysctl.conf{RESET})")
     print("0_Back")
     print("")
 
 def show_cake_menu():
-    print("\nWith Cake")
+    print(f"\n{GREEN}Apply With Cake{RESET}")
     print("")
-    print("1_Delete Old File Then Setup(+Backup)")
-    print("2_Setup Without Delete")
+    print(f"{RED}Warning , Choose carefully :{RESET}")
+    print(f"1_Delete Old File Then Setup+Backup ({GREEN}Recommended for proper optimization{RESET}) ")
+    print(f"2_Setup Without Delete ({YELLOW}If you have special settings in sysctl.conf{RESET})")
     print("0_Back")
     print("")
 
 def show_hybla_menu():
-    print("\nHybla Base")
+    print(f"\n{GREEN}Hybla Base{RESET}")
     print("")
     print("1_Hybla + Fq")
-    print("2_Hybla + Fq_Codel (Recommended)")
+    print("2_Hybla + Fq_Codel")
     print("3_Hybla + Cake")
     print("0_Back")
     print("")
 
 def show_cubic_menu():
-    print("\nCubic Base")
+    print(f"\n{GREEN}Cubic Base{RESET}")
     print("")
     print("1_Cubic + Fq")
-    print("2_Cubic + Fq_Codel (Recommended)")
+    print("2_Cubic + Fq_Codel")
     print("3_Cubic + Cake")
     print("0_Back")
     print("")
 
 def show_speed_test_menu():
-    print("\nSpeed Test")
+    print(f"\n{GREEN}Speed Test{RESET}")
     print("")
     print("1_Bench Method1")
     print("2_Bench Method2")
@@ -124,7 +127,7 @@ def show_speed_test_menu():
     print("")
 
 def show_iperf_menu():
-    print("\nChoose which one you are:")
+    print(f"\n{GREEN}Choose which one you are:{RESET}")
     print("")
     print("1_Client (iran or...)")
     print("2_Server (Kharej/Target or...)")
@@ -158,17 +161,21 @@ def install_required_packages():
     
     return True
 
-def activate_ecn_persistent():
-    print("Activating ECN persistently...")
+def activate_parameters_persistent():
+    print("Activating parameters persistently...")
     try:
         with open("/etc/sysctl.conf", "a") as f:
-            f.write("\n# Enable ECN\n")
+            f.write("\n# Enable parameters\n")
             f.write("net.ipv4.tcp_ecn = 1\n")
+            f.write("net.ipv4.tcp_keepalive_time = 2700\n")
+            f.write("net.ipv4.tcp_keepalive_intvl = 900\n")
+            f.write("net.ipv4.tcp_keepalive_probes = 2\n")
+            f.write("net.ipv4.tcp_sack = 1\n")
         subprocess.run(['sysctl', '-p'])
-        print("ECN activated and will remain active after reboot.")
+        print("parameters activated and will remain active after reboot.")
         return True
     except Exception as e:
-        print(f"ECN activation error: {e}")
+        print(f"parameters activation error: {e}")
         return False
 
 def get_main_interface():
@@ -289,7 +296,7 @@ WantedBy=multi-user.target
 def prompt_restart():
     while True:
         try:
-            choice = input("The mission was successfully completed. Do you want to restart? (Required) Yes or No: ").strip().lower()
+            choice = input(f"\n{GREEN}The mission was successfully completed. Do you want to restart? (Required) Yes or No: {RESET}").strip().lower()
 
             if choice in ['n', 'no']:
                 break
@@ -370,8 +377,8 @@ def check_kernel_and_os_cake():
 def configure_bbr(algorithm):
     print("Setting up BBR...")
 
-    if activate_ecn_persistent():
-        print("ECN has been activated with BBR.")
+    if activate_parameters_persistent():
+        print("parameters has been activated with BBR.")
 
     try:
         with open("/etc/sysctl.conf", "a") as f:
@@ -439,8 +446,8 @@ def setup_without_delete(algorithm):
 def configure_bbr_hybla(algorithm):
     print("Setting up hybla...")
 
-    if activate_ecn_persistent():
-        print("ECN has been activated with hybla.")
+    if activate_parameters_persistent():
+        print("parameters has been activated with hybla.")
 
     try:
         with open("/etc/sysctl.conf", "a") as f:
@@ -508,8 +515,8 @@ def setup_without_delete_hybla(algorithm):
 def configure_bbr_cubic(algorithm):
     print("Setting up Cubic...")
 
-    if activate_ecn_persistent():
-        print("ECN has been activated with Cubic.")
+    if activate_parameters_persistent():
+        print("parameters has been activated with Cubic.")
 
     try:
         with open("/etc/sysctl.conf", "a") as f:
@@ -653,14 +660,58 @@ def run_iperf_server():
     input("You are active as a server, please do not log out. If it is finished, to Back to the menu, press Enter...")
 
 def run_speedtest_ookla():
-    print("Downloading and running Ookla Speedtest...")
+    print("Downloading and running Ookla Speedtest (linux-x86_64) ...")
+    
     os.system("wget https://install.speedtest.net/app/cli/ookla-speedtest-1.2.0-linux-x86_64.tgz")
     os.system("tar zxvf ookla-speedtest-1.2.0-linux-x86_64.tgz")
-    server_num = input("Enter your ookla-server number. Or press Enter to use the Amsterdam server by default: ")
+
+    server_num = input(f"{GREEN}Enter your{RESET} {YELLOW}ookla-server number{RESET}.{GREEN} Or press Enter to let Speedtest automatically select the closest server: {RESET}")
+    print(f"{CYAN}Speed ​​test starting, please wait...{RESET}")
     if not server_num:
-        server_num = "54746"
-    os.system(f"./speedtest -s {server_num}")
-    input("SpeedTest Done, please do not log out. If it is finished, to Back to the menu, press Enter...")
+        command = "./speedtest"
+    else:
+        command = f"./speedtest -s {server_num}"
+
+    try:
+        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+        while True:
+            output = process.stdout.readline()
+            if output == '' and process.poll() is not None:
+                break
+            if output:
+                print(output.strip())
+
+        for line in process.stderr:
+            if "Timeout occurred in connect" not in line:
+                print(line.strip())
+
+        process.wait()
+
+    except Exception as e:
+        print(f"Error running Speedtest: {e}")
+
+    try:
+        os.remove("ookla-speedtest-1.2.0-linux-x86_64.tgz")
+        
+        if os.path.exists("ookla-speedtest-1.2.0-linux-x86_64"):
+            shutil.rmtree("ookla-speedtest-1.2.0-linux-x86_64")
+        
+        if os.path.exists("./speedtest"):
+            os.remove("./speedtest")
+
+        for filename in os.listdir("."):
+            if "ookla" in filename or filename.startswith("speedtest"):
+                if os.path.isfile(filename):
+                    os.remove(filename)
+                elif os.path.isdir(filename):
+                    shutil.rmtree(filename)
+
+    except Exception as e:
+        print(f"Error cleaning up files: {e}")
+    
+    input(f"{GREEN}SpeedTest Done and files removed, to Back to the menu, press Enter...{RESET}")
+
 
 def main():
     try:
