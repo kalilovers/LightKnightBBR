@@ -1,4 +1,4 @@
-# LightKnight Script for Qdisc and Congestion Control Setup and Speed Testing V1.4
+# LightKnight Script for Qdisc and Congestion Control Setup and Speed Testing V1.5
 special thanks to : 
 https://github.com/Azumi67
 
@@ -11,6 +11,13 @@ https://t.me/OPIran_official
 <div align="left">
   <details>
     <summary><strong>Changelog</strong></summary>
+    
+**V 1.5 :**
+
+- Appearance changes - outgoing messages
+- Adding some optimization parameters to reduce network load without reducing standard security, suitable for a wide range of applications
+- Improving the script and improving the performance of optimizers
+- Ookla Speedtest optimization
 
 **V 1.4 :**
 
