@@ -668,29 +668,10 @@ def run_speedtest_ookla():
     server_num = input(f"{GREEN}Enter your{RESET} {YELLOW}ookla-server number{RESET}.{GREEN} Or press Enter to let Speedtest automatically select the closest server: {RESET}")
     print(f"{CYAN}Speed ​​test starting, please wait...{RESET}")
     if not server_num:
-        command = "./speedtest"
+        os.system("./speedtest")
     else:
-        command = f"./speedtest -s {server_num}"
-
-    try:
-        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-
-        while True:
-            output = process.stdout.readline()
-            if output == '' and process.poll() is not None:
-                break
-            if output:
-                print(output.strip())
-
-        for line in process.stderr:
-            if "Timeout occurred in connect" not in line:
-                print(line.strip())
-
-        process.wait()
-
-    except Exception as e:
-        print(f"Error running Speedtest: {e}")
-
+        os.system(f"./speedtest -s {server_num}")
+    
     try:
         os.remove("ookla-speedtest-1.2.0-linux-x86_64.tgz")
         
@@ -710,7 +691,7 @@ def run_speedtest_ookla():
     except Exception as e:
         print(f"Error cleaning up files: {e}")
     
-    input(f"{GREEN}SpeedTest Done and files removed, to Back to the menu, press Enter...{RESET}")
+    input(f"{GREEN}SpeedTest Done and files removed, to Back to the menu, press Enter{RESET}")
 
 
 def main():
