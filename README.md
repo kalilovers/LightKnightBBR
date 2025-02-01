@@ -83,7 +83,7 @@ Also, the feedback messages have been improved so that users are better informed
 
 - Speedtest By ookla With the possibility of specifying a server
 
-![image](https://github.com/kalilovers/LightKnightBBR/assets/30160766/d14d4917-82d3-4006-9cad-082b6aeaa40b)
+![image](https://github.com/chrikman2/LightKnightBBR/assets/30160766/d14d4917-82d3-4006-9cad-082b6aeaa40b)
   </details>
 </div>
 
@@ -111,9 +111,9 @@ Run :
 
 With Installation Python3 packages :
 ```
-sudo apt update && sudo apt install -y python3 python3-pip && python3 <(curl -Ls https://raw.githubusercontent.com/kalilovers/LightKnightBBR/main/bbr.py --ipv4)
+sudo apt update && sudo apt install -y python3 python3-pip && python3 <(curl -Ls https://raw.githubusercontent.com/chrikman2/LightKnightBBR/main/bbr.py --ipv4)
 ```
 simple run :
 ```
-python3 <(curl -Ls https://raw.githubusercontent.com/kalilovers/LightKnightBBR/main/bbr.py --ipv4)
+python3 <(curl -Ls https://raw.githubusercontent.com/chrikman2/LightKnightBBR/main/bbr.py --ipv4)
 ```
