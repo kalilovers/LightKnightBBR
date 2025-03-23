@@ -1,4 +1,4 @@
-# LightKnight Script for Qdisc and Congestion Control Setup and Speed Testing V1.5
+# LightKnight Script for Qdisc and Congestion Control Setup and Speed Testing V1.5.2
 special thanks to : 
 https://github.com/Azumi67
 
@@ -12,6 +12,11 @@ https://t.me/OPIran_official
   <details>
     <summary><strong>Changelog</strong></summary>
     
+
+<br>**V 1.5.2 :**
+
+- From now on, see the changes in the release section.
+
 **V 1.5 :**
 
 - Appearance changes - outgoing messages
@@ -107,13 +112,20 @@ Also, the feedback messages have been improved so that users are better informed
 If you need other features, or there is a problem, let me know in the issue section
 ------------
 
-Run :
+<br>**Install :**
 
-With Installation Python3 packages :
 ```
-sudo apt update && sudo apt install -y python3 python3-pip && python3 <(curl -Ls https://raw.githubusercontent.com/kalilovers/LightKnightBBR/main/bbr.py --ipv4)
+bash <(curl -fsSL https://raw.githubusercontent.com/kalilovers/LightKnightBBR/main/install.sh)
 ```
-simple run :
+
+<br>**Run :**
+
 ```
-python3 <(curl -Ls https://raw.githubusercontent.com/kalilovers/LightKnightBBR/main/bbr.py --ipv4)
+lbbr
+```
+
+<br>**Remove :**
+
+```
+lbbr --uninstall
 ```
