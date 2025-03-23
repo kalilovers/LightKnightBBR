@@ -1,130 +1,127 @@
 # LightKnight Script for Qdisc and Congestion Control Setup and Speed Testing V1.5.2
-special thanks to : 
+تشکر ویژه از : 
 https://github.com/Azumi67
 
-Special thanks to OPIran Club for publishing practical Software and tutorials:
+با تشکر ویژه از OPIranClub به سبب انتشار نرم افزارها و آموزش های کاربردی :
 https://t.me/OPIran_official
+
 
 ----------------------------------------------------------------
 [English](/README.md)   |   [فارسی](/README.per.md)
 
-<div align="left">
+<div align="right">
   <details>
-    <summary><strong>Changelog</strong></summary>
-    
+    <summary><strong>تغییرات</strong></summary>
+
 
 <br>**V 1.5.2 :**
 
-- From now on, see the changes in the release section.
+- از این پس تغییرات را در بخش release مشاهده کنید.
 
 **V 1.5 :**
-
-- Appearance changes - outgoing messages
-- Adding some optimization parameters to reduce network load without reducing standard security, suitable for a wide range of applications
-- Improving the script and improving the performance of optimizers
-- Ookla Speedtest optimization
+- تغییرات ظاهری - پیام های خروجی 
+- افزودن برخی پارامترهای بهینه‌سازی برای کاهش بار شبکه بدون کاهش امنیت استاندارد، مناسب برای طیف گسترده‌ای از کاربردها
+- بهبود اسکریپت و ارتقا عملکرد بهینه سازها
+- بهینه سازی Speedtest Ookla
 
 **V 1.4 :**
+- **موارد افزوده شده :**
+- Tcp Congestion Control جدید : Hybla و Cubic
+- گزینه Status : الگوریتم Qdisk و Congestion Control فعلی سیستم عامل را نمایش میدهد . (برای نمایش صحیح ضرویست که پس از هر تغییرات و کانفیگ و.. سیستم را ریبوت کنید و مجدد بررسی کنید)
+- **موارد تغییر یافته :**
+- دسته بندی منو ها تغییر کرد :
+- گزینه ‏BBR + Cake <  BBR Base < CakePlus 
+- هرکدام از Congestion Control ها امکان فعال سازی با سه نوع FQ_CODE , FQ , CAKE : Qdisk را خواهد داشت .
+- تغییرات ظاهری
+- بهبود عملکرد
 
-- **New :**
-- New Tcp Congestion Control : Hybla and Cubic
-- Status option: displays the current Qdisk and Congestion Control algorithm of the operating system. (For the correct display, it is necessary to reboot the system after every change and configuration and check again)
-- **Changed items :**
-- Menu categories have changed :
-- Option CakePlus > BBR Base > BBR + Cake
-- Each of the Congestion Controls will have the possibility of activation with three types of Qdisk : FQ_CODE, FQ, CAKE.
-- Appearance changes
-- Improved performance
+**V 1.3 :**
+- بهینه سازی در کانفیگ الگوریتم ها .
+- الگوریتم ها فقط در اینترفیس های اصلی اعمال خواهند شد تا از پردازش بیشتر و بهینه سازی معکوس جلوگیری شود .
+- بهینه سازی : رفع مشکل تشخیص و .. در برخی سیستم عامل ها .
+- عملکرد گزینه بازیابی بهینه شد . حتما قبل از اعمال تنظیمات جدید بازیابی کرده و سپس ریبوت کنید .
 
-**V 1.3:**
 
-- Optimization in the configuration of algorithms
-- Algorithms will be applied only in the main interfaces to avoid further processing and reverse optimization.
-- Optimization: fixing the detection problem and... in some operating systems.
-- The performance of the recovery option was optimized. Be sure to restore and then reboot before applying the new settings.
+**V 1.2 :**
+- الگوریتم Cake به عنوان الگوریتم پیشرفته Qos در کنار BBR به صورت ترکیبی اضافه شد.
+**از Cake به عنوان الگوریتم Qos حرفه ای در ‌لایه صف‌بندی (Qdisc) استفاده خواهد شد و صف‌بندی ترافیک را به بهترین شکل ممکن مدیریت می‌کند و باعث می‌شود تا نوسانات جیتر و تأخیر به حداقل برسد
+و از  BBR در لایه کنترل تراکم به عنوان Tcp Congestion Control استفاده خواهد شد و  بهینه‌ترین سرعت ارسال داده را بدون ایجاد ازدحام در ترافیک TCP فراهم می‌کند .**
+-  در هر دو حالت نصب از فایل اصلی بکاپ گرفته میشود.
+-  بهبود هایی در گزینه بازیابی تنظیمات .
+- بهبود هایی در اعمال ecn 
+- بهبود هایی در اعمال الگوریتم 
+- الگوریتم Qos - qdisk در اینترفیس مختلف مانند زمانی که اینترفیس آیپی 6 جدا باشد نیز اعمال خواهد شد .
+- بهبود هایی در نصب بسته ها 
+- بهبود هایی در اجرای تست سرعت و...
 
-**V 1.2:**
-- Cake algorithm was added as an advanced Qos algorithm in combination with BBR:
-
-**Cake will be used as a professional Qos algorithm in the queuing layer (Qdisc) and it will manage traffic queuing in the best possible way and minimize jitter and delay.
-And BBR will be used in the congestion control layer as Tcp Congestion Control and provides the most optimal data transmission speed without causing congestion in TCP traffic.**
-- In both installation modes, the original file is backed up.
-- Improvements in the option to restore settings.
-- Improvements in ecn applications
-- Improvements in applying the algorithm
-- Qos-qdisk algorithm will be applied on different interfaces, such as when the IP6 interface is separate.
-- Improvements in installing packages
-- Improvements in running speed test and...
 
 **V 1.1 :**
-- Optimized
-- Checking the compatibility of the operating system and the kernel
-- Making changes for modern distributions and alternative methods for older systems in Python
-- Check and install required packages
-- ECN (Explicit Congestion Notification) activation
-- The queuing algorithm (fq or fq_codel) for the network interface and qdisk in the operating system and network cards that do not support or are not completely set due to reasons such as the old network card, etc. will be set by automatic checking by the script = **More optimization**
-Also, the feedback messages have been improved so that users are better informed about the status of the execution of the steps.
+- بهینه سازی شده
+- چک کردن سازگاری سیستم‌عامل و کرنل
+- ایجاد تغییراتی برای توزیع های مدرن و متد جایگزین برای سیستم‌های قدیمی‌تر در پایتون
+- بررسی و نصب بسته‌های مورد نیاز 
+- فعال‌سازی ECN (Explicit Congestion Notification)  
+- الگوریتم صف‌بندی (fq یا fq_codel) برای اینترفیس شبکه و qdisk در سیستم عامل و کارت شبکه هایی که پشتیبانی نمیکنند یا به دلایلی مثل قدیمی بودن کارت شبکه و... به طور کامل تنظیم نمیشوند با بررسی خودکار توسط اسکریپت تنظیم خواهد شد = **بهینه سازی بیشتر**
+- همچنین پیام‌های بازخورد بهبود یافته‌اند تا کاربران بهتر از وضعیت اجرای مراحل مطلع شوند.
   </details>
 </div>
 
 ------------------------------------------------------------------------------------------
 
-<div align="left">
+<div align="right">
   <details>
-    <summary><strong>Description</strong></summary>
+    <summary><strong>توضیحات</strong></summary>
 
 
-**A project to configure BBR , HYBLA , CUBIC with three algorithms FQ , FQ_CODEL , CAKE and Run SpeedTest**
+**پروژه ای برای پیکربندی BBR , HYBLA , CUBIC با سه الگوریتم FQ , FQ_CODEL , CAKE و اجرای SpeedTest**
 
-**BBR,HYBLA,CUBIC:**
-- Full configuration
-- Backup and restore applied settings
+**BBR,HYBLA,CUBIC :**
+- پیکربندی کامل 
+- پشتیبان گیری و بازیابی تنظیمات اعمال شده 
 
-**Speed ​​test:**
+**Speedtest :**
 
-- 2 Method For Bench.sh speedtest
 
-- Speedtest Between 2 server With Iperf3
-
-- Speedtest By ookla With the possibility of specifying a server
+- 2 روش برای تست سرعت به صورت Bench.sh
+- تست سرعت بین 2 سرور با Iperf3
+- تست سرعت با *Speedtest By ookla* با امکان تعیین سرور
 
 ![image](https://github.com/kalilovers/LightKnightBBR/assets/30160766/d14d4917-82d3-4006-9cad-082b6aeaa40b)
   </details>
 </div>
 
-------------------------------------------------------------------------------------------
+-----------------------
 
-<div align="left">
+<div align="right">
   <details>
-    <summary><strong>Tips</strong></summary>
+    <summary><strong>نکات و آموزش</strong></summary>
     
-
-- **My suggestion is at least Ubuntu 20.04 and above (22 and above) and Debian 10 and above (at least 11 or 12 and above) (because bbrv2 is used in newer kernels) especially for vpn, games, calls, etc. is**
-- **Supported operating systems » Ubuntu version 18 and above - Debian 10 and above**
-- Be sure to run it in the root user or with **sudo** command
-- **reboot** is required to apply the changes
-- It is recommended to use a similar configuration in tunneling and tunneled servers so that the performance is more optimal and the algorithms of both servers are in harmony with each other. For example, if you have two servers that are tunneled together, activate your desired algorithm . for example, BBR + FQ_CODEL on both servers (if you do not apply it on one of the servers, in fact, that server will used default settings and it algorithm will be different with Optimized server and it will prevent the from full increase of tunnel efficiency and etc.)
+- **پیشنهاد من  حداقل نسخه اوبونتو 20.04 به بالا (22 و بالاتر) و دبیان 10 به بالا(حداقل 11 یا 12 و بالاتر) (چون در کرنل های جدیدتر از bbrv2 استفاده میشود) بخصوص برای vpn ، بازی ، تماس و... است**
+- **سیستم عامل های پشتیبانی شده » اوبونتو نسخه 18 به بالا - دبیان 10 به بالا**
+- حتما در کاربر root و یا با دستور **sudo** اجرا شود
+- برای اعمال تغییرات **reboot** لازم است
+- توصیه میشود در تانلینگ و سرور های تانل شده , از یک کانفیگ مشابه استفاده کنید تا عملکرد بهینه تر باشد و الگوریتم های هردو یا .. سرور با یکدیگر هماهنگ باشند . برای مثال در صورتی که دو سرور دارید که بهم تانل شده اند , الگوریتم مورد نظر خود مثلا BBR + FQ_CODEL را در هردو سرور فعال کنید ( در صورتی که در یکی از سرور ها اعمال نکنید در واقع آن سرور از تنظیمات و الگوریتم پیشفرض که متفاوت از سرور بهینه شده است استفاده خواهد کرد و باعث جلوگیری از افزایش کامل راندمان تانل و ... خواهد شد) .
   </details>
 </div>
 
 
 ------------------------------------------------------------------------------------------
-If you need other features, or there is a problem, let me know in the issue section
+اگر به ویژگی های دیگری نیاز دارید یا مشکلی وجود دارد، ممنون میشوم که در قسمت issue اطلاع دهید
 ------------
 
-<br>**Install :**
+<br>**نصب :**
 
 ```
 bash <(curl -fsSL https://raw.githubusercontent.com/kalilovers/LightKnightBBR/main/install.sh)
 ```
 
-<br>**Run :**
+<br>**اجرا :**
 
 ```
 lbbr
 ```
 
-<br>**Remove :**
+<br>**حذف :**
 
 ```
 lbbr --uninstall
