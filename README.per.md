@@ -1,10 +1,12 @@
-# LightKnight Script for Qdisc and Congestion Control Setup and Speed Testing V1.5.2
-تشکر ویژه از : 
-https://github.com/Azumi67
+# اسکریپت LightKnightBBR  v1.5.2 - برای تنظیم مطمعن تر:
 
-با تشکر ویژه از OPIranClub به سبب انتشار نرم افزارها و آموزش های کاربردی :
-https://t.me/OPIran_official
+ - &#x200F;**الگوریتم‌های کنترل ازدحام:** <CODE>BBR</CODE>، <CODE>HYBLA</CODE>، <CODE>CUBIC</CODE>
+ - &#x200F;**الگوریتم‌های Qdisc:**&#x200F; <CODE>FQ</CODE>، <CODE>FQ_CODEL</CODE>، <CODE>CAKE</CODE>
+ - &#x200F;**برای بهینه سازی: UDP، TCP(توسط الگوریتم های Qdisc) و غیره...**&#x200F;
+  - **با قابلیت های بیشتر : چندین روش تست سرعت ،  پشتیبان گیری/بازیابی تنظیمات ، و غیره...**
 
+
+<br>
 
 ----------------------------------------------------------------
 [English](/README.md)   |   [فارسی](/README.per.md)
@@ -115,14 +117,23 @@ https://t.me/OPIran_official
 bash <(curl -fsSL https://raw.githubusercontent.com/kalilovers/LightKnightBBR/main/install.sh)
 ```
 
-<br>**اجرا :**
+**اجرا :**
 
 ```
 lbbr
 ```
 
-<br>**حذف :**
+**حذف :**
 
 ```
 lbbr --uninstall
 ```
+
+
+<br><br>
+
+
+**❤️ با تشکر ویژه از :**
+ - https://github.com/Azumi67
+ - https://t.me/OPIran_official
+
