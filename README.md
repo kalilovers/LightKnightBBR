@@ -1,9 +1,15 @@
-# LightKnight Script for Qdisc and Congestion Control Setup and Speed Testing V1.5.2
-special thanks to : 
-https://github.com/Azumi67
 
-Special thanks to OPIran Club for publishing practical Software and tutorials:
-https://t.me/OPIran_official
+# LightKnightBBR Script V1.5.2 - for Fine-Tuned Setup :
+ - **Congestion Control :** <CODE>BBR</CODE> , <CODE>HYBLA</CODE> , <CODE>CUBIC</CODE>
+ - **Qdisc algorithms :** <CODE>FQ</CODE> , <CODE>FQ_CODEL</CODE> , <CODE>CAKE </CODE>
+ - **For Optimizing  TCP ,  UDP(By Qdisc algorithms) , etc...**
+ - **With SpeedTest , Backup/Resore settings , etc... Options**
+
+
+<br>
+
+
+
 
 ----------------------------------------------------------------
 [English](/README.md)   |   [فارسی](/README.per.md)
@@ -74,7 +80,7 @@ Also, the feedback messages have been improved so that users are better informed
     <summary><strong>Description</strong></summary>
 
 
-**A project to configure BBR , HYBLA , CUBIC with three algorithms FQ , FQ_CODEL , CAKE and Run SpeedTest**
+**A project to configure BBR , HYBLA , CUBIC with three algorithms FQ , FQ_CODEL , CAKE and SpeedTest**
 
 **BBR,HYBLA,CUBIC:**
 - Full configuration
@@ -118,14 +124,21 @@ If you need other features, or there is a problem, let me know in the issue sect
 bash <(curl -fsSL https://raw.githubusercontent.com/kalilovers/LightKnightBBR/main/install.sh)
 ```
 
-<br>**Run :**
+**Run :**
 
 ```
 lbbr
 ```
 
-<br>**Remove :**
+**Remove :**
 
 ```
 lbbr --uninstall
 ```
+
+<br><br>
+
+
+**❤️ special thanks to :**
+<br>https://github.com/Azumi67
+<br>https://t.me/OPIran_official
