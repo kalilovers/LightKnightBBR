@@ -1,4 +1,12 @@
 
+<p align="center" dir="ltr">
+  <a href="/README.md">English</a> &nbsp; | &nbsp; <a href="/README.per.md">فارسی</a>
+</p>
+
+
+<br>
+
+
 # LightKnightBBR Script V1.5.2 - for Fine-Tuned Setup :
  - **Congestion Control :** <CODE>BBR</CODE> , <CODE>HYBLA</CODE> , <CODE>CUBIC</CODE>
  - **Qdisc algorithms :** <CODE>FQ</CODE> , <CODE>FQ_CODEL</CODE> , <CODE>CAKE</CODE>
@@ -12,7 +20,6 @@
 
 
 ----------------------------------------------------------------
-[English](/README.md)   |   [فارسی](/README.per.md)
 
 <div align="left">
   <details>
