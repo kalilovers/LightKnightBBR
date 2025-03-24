@@ -1,3 +1,13 @@
+
+<p align="center" dir="ltr">
+  <a href="/README.md">English</a> &nbsp; | &nbsp; <a href="/README.per.md">فارسی</a>
+</p>
+
+
+<br>
+
+
+
 # اسکریپت LightKnightBBR  v1.5.2 - برای تنظیم مطمعن تر:
 
  - &#x200F;**الگوریتم‌های کنترل ازدحام:** <CODE>BBR</CODE>، <CODE>HYBLA</CODE>، <CODE>CUBIC</CODE>
@@ -9,7 +19,7 @@
 <br>
 
 ----------------------------------------------------------------
-[English](/README.md)   |   [فارسی](/README.per.md)
+
 
 <div align="right">
   <details>
