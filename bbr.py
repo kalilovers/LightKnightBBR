@@ -110,8 +110,6 @@ def show_main_menu():
     print("3 | Cubic Base")
     print("4 | Restore Default Settings")
     print("5 | Speed Test")
-    print("6 | Update Script")
-    print("7 | Uninstall Script")
     print(f"\nq | {RED}Exit{RESET}")
     print("")
 
@@ -1408,22 +1406,6 @@ def main():
                         break
                     else:
                         print("Invalid choice, please try again.")
-
-
-            elif choice == '6':
-                UpdateScript.handle_script_update()
-
-
-
-            elif choice == '7':
-                success = uninstall_script()
-                
-                if success:
-                    print("\n✅ Uninstall completed successfully!")
-                    sys.exit(0)
-                else:
-                    print("\n⚠️ Uninstall completed with warnings!")
-
 
 
 
