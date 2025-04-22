@@ -1,6 +1,6 @@
 #!/bin/bash
 # Official Installation Script for LightKnightBBR (Public Version)
-# Version: 1.3.0 (Stable Release Installer)
+# Version: 1.3.1 (Installer Optimized)
 # License: MIT
 
 set -euo pipefail
@@ -18,6 +18,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
+# ---------------------- Core Functions ----------------------
 die() {
     echo -e "${RED}Error: $1${NC}" >&2
     exit 1
@@ -57,13 +58,33 @@ check_privileges() {
     fi
 }
 
+test_connection() {
+    local url="$1"
+    local ipv4_url="${url}"
+    local ipv6_url="${url}"
+
+    # Test IPv4 connection
+    if curl --connect-timeout 5 -4 -s -o /dev/null -w "%{http_code}" "$ipv4_url" >/dev/null; then
+        echo "IPv4"
+        return
+    fi
+
+    # Test IPv6 connection
+    if curl --connect-timeout 5 -6 -s -o /dev/null -w "%{http_code}" "$ipv6_url" >/dev/null; then
+        echo "IPv6"
+        return
+    fi
+
+    die "Failed to connect using both IPv4 and IPv6"
+}
+
 install_dependencies() {
     export DEBIAN_FRONTEND=noninteractive
     export APT_LISTCHANGES_FRONTEND=none
 
     local PKGS=(
         curl wget sudo ed
-		iproute2 iptables
+        iproute2 iptables
         python3 python3-pip python3-venv
         jq
     )
@@ -82,11 +103,23 @@ install_dependencies() {
     }
 
     echo -e "${GREEN}Installing Python packages...${NC}"
-    python3 -m pip install --user --disable-pip-version-check --no-warn-script-location \
-        -q requests packaging || {
-        echo -e "${RED}Python package installation failed!${NC}" >&2
-        exit 1
-    }
+    # Test connection and determine protocol
+    local protocol
+    protocol=$(test_connection "https://files.pythonhosted.org")
+
+    if [[ "$protocol" == "IPv4" ]]; then
+        python3 -m pip install --user --disable-pip-version-check --no-warn-script-location \
+            -q requests packaging || {
+            echo -e "${RED}Python package installation failed!${NC}" >&2
+            exit 1
+        }
+    elif [[ "$protocol" == "IPv6" ]]; then
+        python3 -m pip install --user --disable-pip-version-check --no-warn-script-location \
+            -q requests packaging -i https://mirrors.aliyun.com/pypi/simple/ || {
+            echo -e "${RED}Python package installation failed!${NC}" >&2
+            exit 1
+        }
+    fi
 
     echo -e "${GREEN}Verifying core components...${NC}"
     local critical_commands=("python3" "curl" "git" "jq")
@@ -108,16 +141,23 @@ install_dependencies() {
 fetch_latest_release() {
     echo -e "${YELLOW}Fetching latest release info...${NC}" >&2
     local api_url="https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases/latest"
-    
 
-    local release_info
-    release_info=$(curl -fsSL "$api_url" 2>/dev/null) || die "Failed to connect to GitHub"
-    
+    # Test connection and determine protocol
+    local protocol
+    protocol=$(test_connection "$api_url")
+
+    # Use the appropriate protocol for curl
+    if [[ "$protocol" == "IPv4" ]]; then
+        local release_info
+        release_info=$(curl -4 -fsSL "$api_url" 2>/dev/null) || die "Failed to connect to GitHub"
+    elif [[ "$protocol" == "IPv6" ]]; then
+        local release_info
+        release_info=$(curl -6 -fsSL "$api_url" 2>/dev/null) || die "Failed to connect to GitHub"
+    fi
 
     if ! jq -e '.assets' <<< "$release_info" >/dev/null; then
         die "Invalid GitHub API response"
     fi
-    
 
     local asset_url
     asset_url=$(jq -r '.assets[] | select(.name == "bbr.py").browser_download_url' <<< "$release_info" | tr -d '\r\n')
@@ -130,7 +170,6 @@ fetch_latest_release() {
 setup_application() {
     echo -e "${YELLOW}Setting up LightKnightBBR...${NC}"
     
-
     sudo mkdir -p "$INSTALL_DIR" || die "❌ Directory creation failed"
     sudo chmod 755 "$INSTALL_DIR"
 
@@ -138,19 +177,26 @@ setup_application() {
     local download_url
     download_url=$(fetch_latest_release)
     
-
     [[ "$download_url" =~ ^https://github.com/.*/releases/download/.*/bbr.py$ ]] || die "❌ Invalid URL pattern"
 
+    # Test connection and determine protocol
+    local protocol
+    protocol=$(test_connection "$download_url")
 
     local temp_file
     temp_file=$(mktemp -p "$INSTALL_DIR" bbr.py.XXXXXXXXXX)
 
-
-    if ! sudo curl -fsSL --retry 3 --retry-delay 2 --max-time 60 -o "$temp_file" "$download_url"; then
-        sudo rm -f "$temp_file"
-        die "❌ Download failed! Check network connection"
+    if [[ "$protocol" == "IPv4" ]]; then
+        if ! sudo curl -4 -fsSL --retry 3 --retry-delay 2 --max-time 60 -o "$temp_file" "$download_url"; then
+            sudo rm -f "$temp_file"
+            die "❌ Download failed! Check network connection"
+        fi
+    elif [[ "$protocol" == "IPv6" ]]; then
+        if ! sudo curl -6 -fsSL --retry 3 --retry-delay 2 --max-time 60 -o "$temp_file" "$download_url"; then
+            sudo rm -f "$temp_file"
+            die "❌ Download failed! Check network connection"
+        fi
     fi
-
 
     local backup_file
     if [[ -f "${INSTALL_DIR}/bbr.py" ]]; then
@@ -158,7 +204,6 @@ setup_application() {
         sudo mv -f "${INSTALL_DIR}/bbr.py" "$backup_file" || die "❌ Backup failed"
         echo -e "${GREEN}✔ Backup created: $(basename "$backup_file")${NC}"
     fi
-
 
     if sudo mv -f "$temp_file" "${INSTALL_DIR}/bbr.py"; then
         sudo rm -f "$temp_file"
@@ -168,10 +213,8 @@ setup_application() {
         die "❌ Atomic replacement failed"
     fi
 
-
     sudo chmod 755 "${INSTALL_DIR}/bbr.py"
     sudo ln -sfT "${INSTALL_DIR}/bbr.py" "/usr/local/bin/${SCRIPT_NAME}" || die "❌ Symlink creation failed"
-
 
     sudo rm -f "${INSTALL_DIR}"/bbr.py.bak.* 2>/dev/null
 
@@ -183,7 +226,6 @@ main() {
     check_privileges
     install_dependencies
     setup_application
-
 
     echo -e "\n${GREEN}Github : https://github.com/${REPO_OWNER}/${REPO_NAME}${NC}"
     echo -e "\nRun With : ${YELLOW}${SCRIPT_NAME}${NC}\n"
