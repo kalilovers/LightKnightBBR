@@ -58,26 +58,6 @@ check_privileges() {
     fi
 }
 
-test_connection() {
-    local url="$1"
-    local ipv4_url="${url}"
-    local ipv6_url="${url}"
-
-    # Test IPv4 connection
-    if curl --connect-timeout 5 -4 -s -o /dev/null -w "%{http_code}" "$ipv4_url" >/dev/null; then
-        echo "IPv4"
-        return
-    fi
-
-    # Test IPv6 connection
-    if curl --connect-timeout 5 -6 -s -o /dev/null -w "%{http_code}" "$ipv6_url" >/dev/null; then
-        echo "IPv6"
-        return
-    fi
-
-    die "Failed to connect using both IPv4 and IPv6"
-}
-
 install_dependencies() {
     export DEBIAN_FRONTEND=noninteractive
     export APT_LISTCHANGES_FRONTEND=none
@@ -103,22 +83,10 @@ install_dependencies() {
     }
 
     echo -e "${GREEN}Installing Python packages...${NC}"
-    # Test connection and determine protocol
-    local protocol
-    protocol=$(test_connection "https://files.pythonhosted.org")
-
-    if [[ "$protocol" == "IPv4" ]]; then
-        python3 -m pip install --user --disable-pip-version-check --no-warn-script-location \
-            -q requests packaging || {
-            echo -e "${RED}Python package installation failed!${NC}" >&2
-            exit 1
-        }
-    elif [[ "$protocol" == "IPv6" ]]; then
-        python3 -m pip install --user --disable-pip-version-check --no-warn-script-location \
-            -q requests packaging -i https://mirrors.aliyun.com/pypi/simple/ || {
-            echo -e "${RED}Python package installation failed!${NC}" >&2
-            exit 1
-        }
+    if ! python3 -m pip install --user --disable-pip-version-check --no-warn-script-location -q requests packaging; then
+        echo -e "${YELLOW}Retrying with aliyun mirror...${NC}"
+        python3 -m pip install --user --disable-pip-version-check --no-warn-script-location -q requests packaging \
+            -i https://mirrors.aliyun.com/pypi/simple/
     fi
 
     echo -e "${GREEN}Verifying core components...${NC}"
@@ -141,18 +109,11 @@ install_dependencies() {
 fetch_latest_release() {
     echo -e "${YELLOW}Fetching latest release info...${NC}" >&2
     local api_url="https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases/latest"
-
-    # Test connection and determine protocol
-    local protocol
-    protocol=$(test_connection "$api_url")
-
-    # Use the appropriate protocol for curl
-    if [[ "$protocol" == "IPv4" ]]; then
-        local release_info
-        release_info=$(curl -4 -fsSL "$api_url" 2>/dev/null) || die "Failed to connect to GitHub"
-    elif [[ "$protocol" == "IPv6" ]]; then
-        local release_info
-        release_info=$(curl -6 -fsSL "$api_url" 2>/dev/null) || die "Failed to connect to GitHub"
+    
+    local release_info
+    if ! release_info=$(curl -4 -fsSL --max-time 30 "$api_url" 2>/dev/null); then
+        echo -e "${YELLOW}IPv4 failed, trying IPv6...${NC}" >&2
+        release_info=$(curl -6 -fsSL --max-time 30 "$api_url" 2>/dev/null) || die "Failed to connect to GitHub"
     fi
 
     if ! jq -e '.assets' <<< "$release_info" >/dev/null; then
@@ -179,23 +140,12 @@ setup_application() {
     
     [[ "$download_url" =~ ^https://github.com/.*/releases/download/.*/bbr.py$ ]] || die "❌ Invalid URL pattern"
 
-    # Test connection and determine protocol
-    local protocol
-    protocol=$(test_connection "$download_url")
-
     local temp_file
     temp_file=$(mktemp -p "$INSTALL_DIR" bbr.py.XXXXXXXXXX)
 
-    if [[ "$protocol" == "IPv4" ]]; then
-        if ! sudo curl -4 -fsSL --retry 3 --retry-delay 2 --max-time 60 -o "$temp_file" "$download_url"; then
-            sudo rm -f "$temp_file"
-            die "❌ Download failed! Check network connection"
-        fi
-    elif [[ "$protocol" == "IPv6" ]]; then
-        if ! sudo curl -6 -fsSL --retry 3 --retry-delay 2 --max-time 60 -o "$temp_file" "$download_url"; then
-            sudo rm -f "$temp_file"
-            die "❌ Download failed! Check network connection"
-        fi
+    if ! sudo curl -4 -fsSL --retry 3 --retry-delay 2 --max-time 60 -o "$temp_file" "$download_url"; then
+        echo -e "${YELLOW}IPv4 download failed, trying IPv6...${NC}"
+        sudo curl -6 -fsSL --retry 3 --retry-delay 2 --max-time 60 -o "$temp_file" "$download_url"
     fi
 
     local backup_file
