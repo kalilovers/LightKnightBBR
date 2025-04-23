@@ -8,7 +8,7 @@
 
 
 
-# اسکریپت LightKnightBBR  v1.5.2 - برای تنظیم مطمعن تر:
+# اسکریپت LightKnightBBR  v1.5.3 - برای تنظیم مطمئن تر:
 
  - &#x200F;**الگوریتم‌های کنترل ازدحام:** <CODE>BBR</CODE>، <CODE>HYBLA</CODE>، <CODE>CUBIC</CODE>
  - &#x200F;**الگوریتم‌های Qdisc:**&#x200F; <CODE>FQ</CODE>، <CODE>FQ_CODEL</CODE>، <CODE>CAKE</CODE>
