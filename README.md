@@ -26,13 +26,6 @@
     <summary><strong>Changelog</strong></summary>
     
 
-
-<br>**V 1.5.3 :**
-
-- Some sensitive parameters were commented out
-
-
-
 <br>**V 1.5.2 :**
 
 - From now on, see the changes in the release section.
