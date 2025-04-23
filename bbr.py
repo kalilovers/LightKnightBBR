@@ -3,11 +3,8 @@
 # -*- coding: utf-8 -*-
 
 
-###################### v1.5.2 Changes:
-#minor changes :
-#1_ new Option : Update Script
-#2_ Ui Changes
-#3_ Backup optimization
+###################### v1.5.3 Changes:
+#Some sensitive parameters were commented out
 
 ##################### Bugs:
 #Some optimizations are needed.
@@ -38,7 +35,7 @@ import sys
 
 
 
-VERSION = "1.5.2"
+VERSION = "1.5.3"
 REPO_OWNER = "kalilovers"
 REPO_NAME = "LightKnightBBR"
 INSTALL_PATH = "/opt/lightbbr/bbr.py"
@@ -110,6 +107,8 @@ def show_main_menu():
     print("3 | Cubic Base")
     print("4 | Restore Default Settings")
     print("5 | Speed Test")
+    print("6 | Update Script")
+    print("7 | Uninstall Script")
     print(f"\nq | {RED}Exit{RESET}")
     print("")
 
@@ -255,11 +254,11 @@ def activate_parameters_persistent():
     print("Activating parameters persistently...")
     try:
         with open("/etc/sysctl.conf", "a") as f:
-            f.write("\n# Enable parameters\n")
-            f.write("net.ipv4.tcp_ecn = 1\n")
-            f.write("net.ipv4.tcp_keepalive_time = 2700\n")
-            f.write("net.ipv4.tcp_keepalive_intvl = 900\n")
-            f.write("net.ipv4.tcp_keepalive_probes = 2\n")
+            f.write("\n# Enabled parameters\n")
+            f.write("#net.ipv4.tcp_ecn = 1\n")
+            f.write("#net.ipv4.tcp_keepalive_time = 2700\n")
+            f.write("#net.ipv4.tcp_keepalive_intvl = 900\n")
+            f.write("#net.ipv4.tcp_keepalive_probes = 2\n")
             f.write("net.ipv4.tcp_sack = 1\n")
         subprocess.run(['sysctl', '-p'])
         print("parameters activated and will remain active after reboot.")
@@ -1406,6 +1405,22 @@ def main():
                         break
                     else:
                         print("Invalid choice, please try again.")
+
+
+            elif choice == '6':
+                UpdateScript.handle_script_update()
+
+
+
+            elif choice == '7':
+                success = uninstall_script()
+                
+                if success:
+                    print("\n✅ Uninstall completed successfully!")
+                    sys.exit(0)
+                else:
+                    print("\n⚠️ Uninstall completed with warnings!")
+
 
 
 
