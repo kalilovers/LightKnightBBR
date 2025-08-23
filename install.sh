@@ -17,19 +17,54 @@ MIN_PYTHON="3.6"
 MIN_PYTHON_MAJOR=3
 MIN_PYTHON_MINOR=6
 
+
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+MAGENTA='\033[0;35m'
+CYAN='\033[0;36m'
 NC='\033[0m'
+
+# Logging functions
+log_info()   { echo -e "${GREEN}[INFO]${NC} $1"; }
+log_warn()   { echo -e "${YELLOW}[WARN]${NC} $1"; }
+log_error()  { echo -e "${RED}[ERROR]${NC} $1"; }
+log_step()   { echo -e "${CYAN}[STEP]${NC} $1"; }
+
+# Validated prompt (yes/no)
+prompt_confirm() {
+    local prompt="$1 [y/N]: "
+    local default="N"
+    local answer
+    while true; do
+        read -r -p "$prompt" answer
+        answer=${answer:-$default}
+        case "$answer" in
+            [Yy]*) return 0 ;;
+            [Nn]*) return 1 ;;
+            *) log_warn "Please answer yes or no." ;;
+        esac
+    done
+}
+
+# Validated prompt (text, with default)
+prompt_text() {
+    local prompt="$1"
+    local default="$2"
+    local input
+    read -r -p "$prompt [$default]: " input
+    echo "${input:-$default}"
+}
 
 # ---------------------- Core Functions ----------------------
 die() {
-    echo -e "${RED}Error: $1${NC}" >&2
+    log_error "$1"
     exit 1
 }
 
 check_os() {
-    echo -e "${YELLOW}Checking OS compatibility...${NC}"
+    log_step "Checking OS compatibility..."
     
     if ! [[ -f /etc/os-release ]]; then
         die "Unsupported operating system"
@@ -56,8 +91,12 @@ check_os() {
 check_privileges() {
     if [[ $EUID -ne 0 ]]; then
         if ! sudo -n true 2>/dev/null; then
-            echo -e "${YELLOW}This operation requires root privileges.${NC}"
-            sudo -v || die "Failed to get sudo privileges"
+            log_warn "This operation requires root privileges."
+            if prompt_confirm "Do you want to continue and grant sudo privileges?"; then
+                sudo -v || die "Failed to get sudo privileges"
+            else
+                die "User declined privilege escalation."
+            fi
         fi
     fi
 }
@@ -78,17 +117,17 @@ install_dependencies() {
         jq git
     )
 
-    echo -e "${GREEN}Updating package lists...${NC}"
+    log_step "Updating package lists..."
     sudo apt-get update -qq 2>/dev/null || {
-        echo -e "${YELLOW}Warning: Some package lists failed to update, continuing anyway...${NC}" >&2
+    log_warn "Some package lists failed to update, continuing anyway..."
     }
 
-    echo -e "${GREEN}Installing required packages...${NC}"
+    log_step "Installing required packages..."
     sudo apt-get install -y --no-install-recommends -qq \
         -o Dpkg::Options::="--force-confold" \
         -o Dpkg::Options::="--force-unsafe-io" \
         "${PKGS[@]}" 2>/dev/null || {
-        echo -e "${YELLOW}Warning: Some packages may have failed to install${NC}" >&2
+    log_warn "Some packages may have failed to install."
     }
 #=====================================
 
@@ -98,7 +137,7 @@ install_dependencies() {
 #=====================================
 #### Installing python3 packs
 
-	echo -e "${GREEN}Checking Python version...${NC}"
+    log_step "Checking Python version..."
 	local python_version python_major python_minor
 	python_version=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')" || die "Python3 not found")
 	python_major=$(python3 -c "import sys; print(sys.version_info.major)")
@@ -111,26 +150,37 @@ install_dependencies() {
 	fi
 
 
-	echo -e "${GREEN}Installing Python packages...${NC}"
+    log_step "Ensuring $INSTALL_DIR exists and is writable..."
+    sudo mkdir -p "$INSTALL_DIR" && sudo chmod 755 "$INSTALL_DIR"
 
+    log_step "Installing Python packages..."
 
-    try_pip_install() {
-        python3 -m pip install --user --disable-pip-version-check --no-warn-script-location "$@" -q requests packaging
-    }
-
-    if ! try_pip_install; then
-        echo -e "${YELLOW}Retrying with aliyun mirror...${NC}"
-        if ! try_pip_install -i https://mirrors.aliyun.com/pypi/simple/; then
-            echo -e "${YELLOW}Trying with --break-system-packages...${NC}"
-            if ! try_pip_install --break-system-packages; then
-                echo -e "${YELLOW}Retrying with aliyun mirror and --break-system-packages...${NC}"
-                try_pip_install --break-system-packages -i https://mirrors.aliyun.com/pypi/simple/ || \
-                    die "Python package installation failed!"
+    # Detect PEP 668 (externally managed environment)
+    if python3 -c "import sys; sys.exit(hasattr(sys, 'externally_managed'))"; then
+        log_warn "Detected PEP 668: Python is externally managed. Using virtual environment for pip installs."
+        local venv_dir="$INSTALL_DIR/venv"
+        sudo python3 -m venv "$venv_dir"
+        sudo -H "$venv_dir/bin/pip" install --upgrade pip
+        sudo -H "$venv_dir/bin/pip" install requests packaging
+        log_info "Python packages installed in virtual environment: $venv_dir"
+    else
+        try_pip_install() {
+            python3 -m pip install --user --disable-pip-version-check --no-warn-script-location "$@" -q requests packaging
+        }
+        if ! try_pip_install; then
+            log_warn "Retrying with aliyun mirror..."
+            if ! try_pip_install -i https://mirrors.aliyun.com/pypi/simple/; then
+                log_warn "Trying with --break-system-packages..."
+                if ! try_pip_install --break-system-packages; then
+                    log_warn "Retrying with aliyun mirror and --break-system-packages..."
+                    try_pip_install --break-system-packages -i https://mirrors.aliyun.com/pypi/simple/ || \
+                        die "Python package installation failed!"
+                fi
             fi
         fi
     fi
 
-    echo -e "${GREEN}Verifying core components...${NC}"
+    log_step "Verifying core components..."
     local critical_commands=("python3" "curl" "git" "jq")
     local missing=()
     
@@ -144,7 +194,7 @@ install_dependencies() {
         die "Missing critical components: ${missing[*]}"
     fi
 
-    echo -e "\n${GREEN}All critical dependencies verified!${NC}"
+    log_info "All critical dependencies verified!"
 }
 
 #=====================================
@@ -154,12 +204,12 @@ install_dependencies() {
 
 
 fetch_latest_release() {
-    echo -e "${YELLOW}Fetching latest release info...${NC}" >&2
+    log_step "Fetching latest release info..."
     local api_url="https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases/latest"
     
     local release_info
     if ! release_info=$(curl -4 -fsSL --max-time 30 "$api_url" 2>/dev/null); then
-        echo -e "${YELLOW}IPv4 failed, trying IPv6...${NC}" >&2
+    log_warn "IPv4 failed, trying IPv6..."
         release_info=$(curl -6 -fsSL --max-time 30 "$api_url" 2>/dev/null) || die "Failed to connect to GitHub"
     fi
 
@@ -168,38 +218,48 @@ fetch_latest_release() {
     fi
 
     local asset_url
-    asset_url=$(jq -r '.assets[] | select(.name == "bbr.py").browser_download_url' <<< "$release_info" | tr -d '\r\n')
-    
-    [[ -z "$asset_url" || "$asset_url" == "null" ]] && die "Asset 'bbr.py' not found"
-    
+    asset_url=$(echo "$release_info" | jq -r '.assets[] | select(.name == "bbr.py") | .browser_download_url')
+    if [[ -z "$asset_url" || "$asset_url" == "null" ]]; then
+        die "Asset 'bbr.py' not found in latest release."
+    fi
     echo "$asset_url"
 }
 
 setup_application() {
-    echo -e "${YELLOW}Setting up LightKnightBBR...${NC}"
+    log_step "Setting up LightKnightBBR..."
     
     sudo mkdir -p "$INSTALL_DIR" || die "❌ Directory creation failed"
     sudo chmod 755 "$INSTALL_DIR"
 
-    echo -e "${YELLOW}Downloading latest release...${NC}"
+    log_step "Downloading latest release..."
     local download_url
-    download_url=$(fetch_latest_release)
-    
-    [[ "$download_url" =~ ^https://github.com/.*/releases/download/.*/bbr.py$ ]] || die "❌ Invalid URL pattern"
+    download_url=$(fetch_latest_release | tail -n 1 | tr -d '\r\n')
+    if [[ -z "$download_url" ]]; then
+        die "❌ Could not determine download URL for bbr.py"
+    fi
 
     local temp_file
-    temp_file=$(mktemp -p "$INSTALL_DIR" bbr.py.XXXXXXXXXX)
+    temp_file=$(sudo mktemp -p "$INSTALL_DIR" bbr.py.XXXXXXXXXX)
 
+    log_step "Downloading bbr.py from $download_url to $temp_file"
     if ! sudo curl -4 -fsSL --retry 3 --retry-delay 2 --max-time 60 -o "$temp_file" "$download_url"; then
-        echo -e "${YELLOW}IPv4 download failed, trying IPv6...${NC}"
-        sudo curl -6 -fsSL --retry 3 --retry-delay 2 --max-time 60 -o "$temp_file" "$download_url"
+        log_warn "IPv4 download failed, trying IPv6..."
+        if ! sudo curl -6 -fsSL --retry 3 --retry-delay 2 --max-time 60 -o "$temp_file" "$download_url"; then
+            log_error "Failed to download bbr.py from $download_url via both IPv4 and IPv6."
+            sudo rm -f "$temp_file"
+            die "Download of bbr.py failed. Check network connectivity and release asset URL."
+        fi
     fi
 
     local backup_file
     if [[ -f "${INSTALL_DIR}/bbr.py" ]]; then
-        backup_file="${INSTALL_DIR}/bbr.py.bak.$(date +%s)"
-        sudo mv -f "${INSTALL_DIR}/bbr.py" "$backup_file" || die "❌ Backup failed"
-        echo -e "${GREEN}✔ Backup created: $(basename "$backup_file")${NC}"
+        if prompt_confirm "A previous version of bbr.py exists. Do you want to back it up and replace it?"; then
+            backup_file="${INSTALL_DIR}/bbr.py.bak.$(date +%s)"
+            sudo mv -f "${INSTALL_DIR}/bbr.py" "$backup_file" || die "❌ Backup failed"
+            log_info "Backup created: $(basename \"$backup_file\")"
+        else
+            die "User declined to replace existing bbr.py."
+        fi
     fi
 
     if sudo mv -f "$temp_file" "${INSTALL_DIR}/bbr.py"; then
@@ -215,7 +275,7 @@ setup_application() {
 
     sudo rm -f "${INSTALL_DIR}"/bbr.py.bak.* 2>/dev/null
 
-    echo -e "\n${GREEN}✅ Successfully installed latest version!${NC}"
+    log_info "Successfully installed latest version!"
 }
 
 main() {
@@ -224,8 +284,8 @@ main() {
     install_dependencies
     setup_application
 
-    echo -e "\n${GREEN}Github : https://github.com/${REPO_OWNER}/${REPO_NAME}${NC}"
-    echo -e "\nRun With : ${YELLOW}${SCRIPT_NAME}${NC}\n"
+    log_info "Github : https://github.com/${REPO_OWNER}/${REPO_NAME}"
+    log_info "Run With : ${SCRIPT_NAME}"
 }
 
 main

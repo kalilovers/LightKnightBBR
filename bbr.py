@@ -31,6 +31,38 @@ import shutil
 import platform
 import subprocess
 import sys
+# Atomic file lock for safe writes
+try:
+    from filelock import FileLock, Timeout
+except ImportError:
+    FileLock = None
+    Timeout = None
+
+# Utility: run command safely
+def run_cmd(cmd, check=True, capture_output=False, shell=False):
+    """Run a shell command safely, return output or None."""
+    try:
+        result = subprocess.run(cmd, check=check, capture_output=capture_output, text=True, shell=shell)
+        return result.stdout if capture_output else None
+    except subprocess.CalledProcessError as e:
+        print(f"Command failed: {cmd}\n{e}")
+        return None
+
+# Utility: atomic file write with filelock
+def atomic_write(filepath, content, mode="a"):
+    """Write to file atomically using filelock if available."""
+    lockfile = f"{filepath}.lock"
+    if FileLock:
+        lock = FileLock(lockfile)
+        try:
+            with lock:
+                with open(filepath, mode) as f:
+                    f.write(content)
+        except Timeout:
+            print(f"Could not acquire lock for {filepath}")
+    else:
+        with open(filepath, mode) as f:
+            f.write(content)
 
 
 
@@ -253,14 +285,13 @@ def show_iperf_menu():
 def activate_parameters_persistent():
     print("Activating parameters persistently...")
     try:
-        with open("/etc/sysctl.conf", "a") as f:
-            f.write("\n# Enabled parameters\n")
-            f.write("#net.ipv4.tcp_ecn = 1\n")
-            f.write("#net.ipv4.tcp_keepalive_time = 2700\n")
-            f.write("#net.ipv4.tcp_keepalive_intvl = 900\n")
-            f.write("#net.ipv4.tcp_keepalive_probes = 2\n")
-            f.write("net.ipv4.tcp_sack = 1\n")
-        subprocess.run(['sysctl', '-p'])
+        atomic_write("/etc/sysctl.conf", "\n# Enabled parameters\n", "a")
+        atomic_write("/etc/sysctl.conf", "#net.ipv4.tcp_ecn = 1\n", "a")
+        atomic_write("/etc/sysctl.conf", "#net.ipv4.tcp_keepalive_time = 2700\n", "a")
+        atomic_write("/etc/sysctl.conf", "#net.ipv4.tcp_keepalive_intvl = 900\n", "a")
+        atomic_write("/etc/sysctl.conf", "#net.ipv4.tcp_keepalive_probes = 2\n", "a")
+        atomic_write("/etc/sysctl.conf", "net.ipv4.tcp_sack = 1\n", "a")
+        run_cmd(['sysctl', '-p'])
         print("parameters activated and will remain active after reboot.")
         return True
     except Exception as e:
@@ -279,8 +310,8 @@ def get_main_interface():
             if any(interface.startswith(v) for v in virtual_interfaces):
                 continue
 
-            result = subprocess.run(['ip', 'addr', 'show', interface], capture_output=True, text=True)
-            if "UP" in result.stdout:
+            result = run_cmd(['ip', 'addr', 'show', interface], capture_output=True)
+            if result and "UP" in result:
                 try:
                     with open(f"/sys/class/net/{interface}/mtu", "r") as mtu_file:
                         mtu = int(mtu_file.read().strip())
@@ -307,8 +338,11 @@ def get_current_settings():
         return "Unknown", "Unknown"
 
     try:
-        qdisc_result = subprocess.check_output(f"tc qdisc show dev {main_interface}", shell=True).decode().strip()
-    except subprocess.CalledProcessError:
+        qdisc_result = run_cmd(f"tc qdisc show dev {main_interface}", capture_output=True, shell=True)
+        if not qdisc_result:
+            print(f"Error retrieving qdisc for {main_interface}")
+            return "Unknown", "Unknown"
+    except Exception:
         print(f"Error retrieving qdisc for {main_interface}")
         return "Unknown", "Unknown"
 
@@ -337,10 +371,10 @@ def setup_qdisc(algorithm):
         return False
 
     try:
-        subprocess.run(['tc', 'qdisc', 'replace', 'dev', interface, 'root', algorithm], check=True)
+        run_cmd(['tc', 'qdisc', 'replace', 'dev', interface, 'root', algorithm])
         print(f"The {algorithm} queuing algorithm was set on the {interface} interface.")
         return True
-    except subprocess.CalledProcessError as e:
+    except Exception as e:
         print(f"Error in setting the queuing algorithm on {interface}: {e}. Exiting script.")
         return False
 
@@ -371,11 +405,10 @@ WantedBy=multi-user.target
 """
     service_path = "/etc/systemd/system/qdisc-setup.service"
     try:
-        with open(service_path, "w") as f:
-            f.write(service_content)
-        subprocess.run(['systemctl', 'daemon-reload'])
-        subprocess.run(['systemctl', 'enable', 'qdisc-setup.service'])
-        subprocess.run(['systemctl', 'start', 'qdisc-setup.service'])
+        atomic_write(service_path, service_content, "w")
+        run_cmd(['systemctl', 'daemon-reload'])
+        run_cmd(['systemctl', 'enable', 'qdisc-setup.service'])
+        run_cmd(['systemctl', 'start', 'qdisc-setup.service'])
         print("The systemd service was successfully created and activated for the main interface.")
         return True
     except Exception as e:
@@ -470,11 +503,10 @@ def configure_bbr(algorithm):
         print("parameters has been activated with BBR.")
 
     try:
-        with open("/etc/sysctl.conf", "a") as f:
-            f.write(f"\n# {algorithm} Light Knight\n")
-            f.write(f"net.core.default_qdisc = {algorithm}\n")
-            f.write("net.ipv4.tcp_congestion_control = bbr\n")
-        subprocess.run(['sysctl', '-p'])
+        atomic_write("/etc/sysctl.conf", f"\n# {algorithm} Light Knight\n", "a")
+        atomic_write("/etc/sysctl.conf", f"net.core.default_qdisc = {algorithm}\n", "a")
+        atomic_write("/etc/sysctl.conf", "net.ipv4.tcp_congestion_control = bbr\n", "a")
+        run_cmd(['sysctl', '-p'])
         print("BBR settings applied.")
     except Exception as e:
         print(f"Error in setting BBR: {e}")
@@ -605,11 +637,10 @@ def configure_bbr_hybla(algorithm):
         print("parameters has been activated with hybla.")
 
     try:
-        with open("/etc/sysctl.conf", "a") as f:
-            f.write(f"\n# {algorithm} Light Knight\n")
-            f.write(f"net.core.default_qdisc = {algorithm}\n")
-            f.write("net.ipv4.tcp_congestion_control = hybla\n")
-        subprocess.run(['sysctl', '-p'])
+        atomic_write("/etc/sysctl.conf", f"\n# {algorithm} Light Knight\n", "a")
+        atomic_write("/etc/sysctl.conf", f"net.core.default_qdisc = {algorithm}\n", "a")
+        atomic_write("/etc/sysctl.conf", "net.ipv4.tcp_congestion_control = hybla\n", "a")
+        run_cmd(['sysctl', '-p'])
         print("hybla settings applied.")
     except Exception as e:
         print(f"Error in setting hybla: {e}")
@@ -735,11 +766,10 @@ def configure_bbr_cubic(algorithm):
         print("parameters has been activated with Cubic.")
 
     try:
-        with open("/etc/sysctl.conf", "a") as f:
-            f.write(f"\n# {algorithm} Light Knight\n")
-            f.write(f"net.core.default_qdisc = {algorithm}\n")
-            f.write("net.ipv4.tcp_congestion_control = cubic\n")
-        subprocess.run(['sysctl', '-p'])
+        atomic_write("/etc/sysctl.conf", f"\n# {algorithm} Light Knight\n", "a")
+        atomic_write("/etc/sysctl.conf", f"net.core.default_qdisc = {algorithm}\n", "a")
+        atomic_write("/etc/sysctl.conf", "net.ipv4.tcp_congestion_control = cubic\n", "a")
+        run_cmd(['sysctl', '-p'])
         print("Cubic settings applied.")
     except Exception as e:
         print(f"Error in setting Cubic: {e}")
@@ -881,9 +911,9 @@ def restore():
 
         service_path = "/etc/systemd/system/qdisc-setup.service"
         if os.path.exists(service_path):
-            subprocess.run(['systemctl', 'disable', 'qdisc-setup.service'], check=True)
+            run_cmd(['systemctl', 'disable', 'qdisc-setup.service'])
             os.remove(service_path)
-            subprocess.run(['systemctl', 'daemon-reload'], check=True)
+            run_cmd(['systemctl', 'daemon-reload'])
             print("✅ Systemd service removed.")
         if os.path.exists("/etc/systemd/system/multi-user.target.wants/qdisc-setup.service"):
             os.remove("/etc/systemd/system/multi-user.target.wants/qdisc-setup.service")
@@ -893,19 +923,19 @@ def restore():
         interface = get_main_interface()
         if interface:
             try:
-                subprocess.run(['tc', 'qdisc', 'delete', 'dev', interface, 'root'], check=True)
+                run_cmd(['tc', 'qdisc', 'delete', 'dev', interface, 'root'])
                 print(f"✅ Default qdisc restored on {interface}.")
-            except subprocess.CalledProcessError:
+            except Exception:
                 print(f"⚠️ Failed to reset qdisc on {interface}. Applying 'fq'...")
-                subprocess.run(['tc', 'qdisc', 'replace', 'dev', interface, 'root', 'fq'], check=True)
+                run_cmd(['tc', 'qdisc', 'replace', 'dev', interface, 'root', 'fq'])
                 print(f"✅ 'fq' set on {interface}.")
         else:
             print("⚠️ No main interface found!")
 
         try:
-            subprocess.run(['sysctl', '-p'], check=True)
+            run_cmd(['sysctl', '-p'])
             print("✅ sysctl settings applied.")
-        except subprocess.CalledProcessError as e:
+        except Exception as e:
             print(f"❌ sysctl error: {e}")
             input("Press Enter to exit...")
             return False
@@ -927,63 +957,57 @@ def restore():
 
 def run_bench_method1():
     print("Running Bench Method1...")
-    os.system("wget -qO- bench.sh | bash")
+    run_cmd("wget -qO- bench.sh | bash", shell=True)
 
 def run_bench_method2():
     print("Running Bench Method2...")
-    os.system("curl -Lso- bench.sh | bash")
+    run_cmd("curl -Lso- bench.sh | bash", shell=True)
 
 def run_iperf_client():
     print("Starting Iperf3 as client...")
-    os.system("apt update")
-    os.system("apt install iperf3 -y")
-    os.system("ufw allow 5201")
+    run_cmd(["apt", "update"])
+    run_cmd(["apt", "install", "iperf3", "-y"])
+    run_cmd(["ufw", "allow", "5201"])
     server_ip = input("What is the IP address of your target server? Enter Your Target IP: ")
-    os.system(f"iperf3 -c {server_ip} -i 1 -t 10 -P 20")
+    run_cmd(f"iperf3 -c {server_ip} -i 1 -t 10 -P 20", shell=True)
     input("The download speed test was done. To test the upload speed, press Enter...")
-    os.system(f"iperf3 -c {server_ip} -R -i 1 -t 10 -P 20")
+    run_cmd(f"iperf3 -c {server_ip} -R -i 1 -t 10 -P 20", shell=True)
     input("The upload speed test was done. To Back to the menu, press Enter...")
 
 def run_iperf_server():
     print("Starting Iperf3 as server...")
-    os.system("apt update")
-    os.system("apt install iperf3 -y")
-    os.system("ufw allow 5201")
-    os.system("iperf3 -s")
+    run_cmd(["apt", "update"])
+    run_cmd(["apt", "install", "iperf3", "-y"])
+    run_cmd(["ufw", "allow", "5201"])
+    run_cmd(["iperf3", "-s"])
     input("You are active as a server, please do not log out. If it is finished, to Back to the menu, press Enter...")
 
 def run_speedtest_ookla():
     print("Downloading and running Ookla Speedtest (linux-x86_64) ...")
-    
-    os.system("wget https://install.speedtest.net/app/cli/ookla-speedtest-1.2.0-linux-x86_64.tgz")
-    os.system("tar zxvf ookla-speedtest-1.2.0-linux-x86_64.tgz")
+    run_cmd(["wget", "https://install.speedtest.net/app/cli/ookla-speedtest-1.2.0-linux-x86_64.tgz"])
+    run_cmd(["tar", "zxvf", "ookla-speedtest-1.2.0-linux-x86_64.tgz"])
 
     server_num = input(f"{GREEN}Enter your{RESET} {YELLOW}ookla-server number{RESET}.{GREEN} Or press Enter to let Speedtest automatically select the closest server: {RESET}")
     print(f"{CYAN}Speed ​​test starting, please wait...{RESET}")
     if not server_num:
-        os.system("./speedtest")
+        run_cmd(["./speedtest"])
     else:
-        os.system(f"./speedtest -s {server_num}")
-    
+        run_cmd(["./speedtest", "-s", server_num])
+
     try:
         os.remove("ookla-speedtest-1.2.0-linux-x86_64.tgz")
-        
         if os.path.exists("ookla-speedtest-1.2.0-linux-x86_64"):
             shutil.rmtree("ookla-speedtest-1.2.0-linux-x86_64")
-        
         if os.path.exists("./speedtest"):
             os.remove("./speedtest")
-
         for filename in os.listdir("."):
             if "ookla" in filename or filename.startswith("speedtest"):
                 if os.path.isfile(filename):
                     os.remove(filename)
                 elif os.path.isdir(filename):
                     shutil.rmtree(filename)
-
     except Exception as e:
         print(f"Error cleaning up files: {e}")
-    
     input(f"{GREEN}SpeedTest Done and files removed, to Back to the menu, press Enter{RESET}")
 
 

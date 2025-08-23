@@ -8,10 +8,16 @@
 
 
 # LightKnightBBR Script V1.5.3 - for Fine-Tuned Setup :
- - **Congestion Control :** <CODE>BBR</CODE> , <CODE>HYBLA</CODE> , <CODE>CUBIC</CODE>
- - **Qdisc algorithms :** <CODE>FQ</CODE> , <CODE>FQ_CODEL</CODE> , <CODE>CAKE</CODE>
- - **For Optimizing  TCP ,  UDP(By Qdisc algorithms) , etc...**
- - **With SpeedTest , Backup/Restore settings , etc... Options**
+- **Congestion Control:** <CODE>BBR</CODE>, <CODE>HYBLA</CODE>, <CODE>CUBIC</CODE>
+- **Qdisc algorithms:** <CODE>FQ</CODE>, <CODE>FQ_CODEL</CODE>, <CODE>CAKE</CODE>
+- **Optimizes TCP, UDP (via Qdisc algorithms), and more**
+- **SpeedTest, Backup/Restore settings, and more options**
+- **Robust installer:**
+  - Automatic dependency installation (curl, git, jq, python3, etc.)
+  - Handles PEP 668 (externally managed Python) by using a virtual environment for Python packages
+  - Improved CLI UX: color-coded logging, validated prompts, and error handling
+  - Safe privilege escalation and atomic file operations
+  - Reliable asset download with error handling
 
 
 <br>
@@ -112,32 +118,44 @@ Also, the feedback messages have been improved so that users are better informed
     <summary><strong>Tips</strong></summary>
     
 
-- **My suggestion is at least Ubuntu 20.04 and above (22 and above) and Debian 10 and above (at least 11 or 12 and above) (because bbrv2 is used in newer kernels) especially for vpn, games, calls, etc. is**
-- **Supported operating systems » Ubuntu version 18 and above - Debian 10 and above**
-- Be sure to run it in the root user or with **sudo** command
-- **reboot** is required to apply the changes
-- It is recommended to use a similar configuration in tunneling and tunneled servers so that the performance is more optimal and the algorithms of both servers are in harmony with each other. For example, if you have two servers that are tunneled together, activate your desired algorithm . for example, BBR + FQ_CODEL on both servers (if you do not apply it on one of the servers, in fact, that server will used default settings and it algorithm will be different with Optimized server and it will prevent the from full increase of tunnel efficiency and etc.)
+- **Recommended OS:** Ubuntu 20.04+ (22+ preferred), Debian 10+ (11/12+ preferred)
+- **Supported OS:** Ubuntu 18+, Debian 10+
+- **Run as root or with sudo.**
+- **Reboot required to apply changes.**
+- **For best results, use matching algorithms on both ends of a tunnel.**
   </details>
 </div>
 
 
 ------------------------------------------------------------------------------------------
-If you need other features, or there is a problem, let me know in the issue section
+If you need other features, or encounter any issues, please open an issue on GitHub.
 ------------
 
-<br>**Install :**
+
+## Installation
+
+Run the installer as root or with sudo:
 
 ```
 bash <(curl -fsSL https://raw.githubusercontent.com/kalilovers/LightKnightBBR/main/install.sh)
 ```
 
-**Run :**
+The installer will:
+- Check OS compatibility (Debian/Ubuntu)
+- Install all required dependencies automatically
+- Handle modern Python environments (PEP 668)
+- Download and install the latest version of LightKnightBBR
+- Provide robust, color-coded logging and validated prompts
+
+## Usage
+
+Run the script:
 
 ```
 lbbr
 ```
 
-**Remove :**
+To uninstall:
 
 ```
 lbbr --uninstall
